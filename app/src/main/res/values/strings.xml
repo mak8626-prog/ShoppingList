@@ -6,6 +6,7 @@
     <string name="add">Добавить</string>
     <string name="delete">Удалить</string>
     <string name="clear_done">Убрать купленное</string>
+    <string name="settings">Настройки</string>
     <string name="total_zero">Итого: 0 ₽</string>
 
     <string-array name="categories">
