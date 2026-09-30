@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swDarkTheme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Тёмная тема"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swCompact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Компактный вид списка"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swShowDone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Показывать купленные"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swShowTotal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Показывать итоговую сумму"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swClearFields"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Очищать поля после добавления"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+</LinearLayout>
