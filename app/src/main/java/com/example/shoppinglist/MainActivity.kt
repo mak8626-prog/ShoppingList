@@ -5,16 +5,20 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var repo: ShoppingRepository
     private lateinit var adapter: ShoppingAdapter
     private lateinit var textTotal: TextView
+    private lateinit var chipGroup: ChipGroup
     private val allItems = mutableListOf<ShoppingItem>()
     private val displayedItems = mutableListOf<ShoppingItem>()
     private var currentCategory: String = "Все"
@@ -34,28 +39,19 @@ class MainActivity : AppCompatActivity() {
         allItems.addAll(repo.load())
 
         val editItem = findViewById<AutoCompleteTextView>(R.id.editItem)
-        val spinnerCategory = findViewById<Spinner>(R.id.spinnerCategory)
         val editPrice = findViewById<EditText>(R.id.editPrice)
         val editQuantity = findViewById<EditText>(R.id.editQuantity)
         val btnAdd = findViewById<Button>(R.id.btnAdd)
         val btnClear = findViewById<Button>(R.id.btnClearDone)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
+        chipGroup = findViewById(R.id.chipGroup)
         textTotal = findViewById(R.id.textTotal)
 
-        // --- Спиннер: "Все" первым ---
-        val spinnerItems = mutableListOf("Все")
-        spinnerItems.addAll(resources.getStringArray(R.array.categories))
-        val spinnerAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            spinnerItems
-        )
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerCategory.adapter = spinnerAdapter
+        setupChips()
 
         // --- Табы ---
-        val cats = listOf("Все") + resources.getStringArray(R.array.categories).toList()
+        val cats = listOf("Все") + allCategoryNames()
         cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -67,22 +63,36 @@ class MainActivity : AppCompatActivity() {
         })
 
         setupAutoComplete(editItem)
-        setupPriceAutofill(editItem, editPrice)
+        setupAutofill(editItem, editPrice)
 
-        adapter = ShoppingAdapter(
-            items = displayedItems,
-            onChange = {
-                repo.save(allItems)
-                updateTotal()
-            },
-            onDelete = { item ->
+        adapter = ShoppingAdapter(displayedItems) {
+            repo.save(allItems)
+            updateTotal()
+        }
+        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.adapter = adapter
+
+        // --- Свайп влево для удаления ---
+        val swipeCallback = object : ItemTouchHelper.SimpleCallback(
+            0, ItemTouchHelper.LEFT
+        ) {
+            override fun onMove(
+                rv: RecyclerView,
+                vh: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val pos = viewHolder.bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return
+                val item = displayedItems.removeAt(pos)
                 allItems.remove(item)
+                adapter.notifyItemRemoved(pos)
                 repo.save(allItems)
                 updateTotal()
             }
-        )
-        recycler.layoutManager = LinearLayoutManager(this)
-        recycler.adapter = adapter
+        }
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recycler)
 
         btnAdd.setOnClickListener {
             val name = editItem.text.toString().trim()
@@ -91,9 +101,7 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            var category = spinnerCategory.selectedItem.toString()
-            if (category == "Все") category = "Разное"
-
+            val category = selectedCategory()
             val price = editPrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
             val quantity = editQuantity.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
 
@@ -101,6 +109,7 @@ class MainActivity : AppCompatActivity() {
 
             repo.addToHistory(name)
             repo.saveLastPrice(name, price)
+            repo.saveCategoryForProduct(name, category)
             setupAutoComplete(editItem)
 
             editItem.text.clear()
@@ -126,14 +135,82 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
-    // При выборе из выпадашки — подставить последнюю цену
-    private fun setupPriceAutofill(edit: AutoCompleteTextView, priceField: EditText) {
+    // ---------- ЧИПЫ ----------
+    private fun allCategoryNames(): List<String> {
+        val base = resources.getStringArray(R.array.categories).toList()
+        return (base + repo.loadCustomCategories()).distinct()
+    }
+
+    private fun setupChips() {
+        chipGroup.removeAllViews()
+        val cats = allCategoryNames()
+        cats.forEach { cat ->
+            val chip = Chip(this).apply {
+                text = cat
+                isCheckable = true
+                isClickable = true
+            }
+            chipGroup.addView(chip)
+        }
+
+        // Кнопка "+" для добавления новой категории
+        val plusChip = Chip(this).apply {
+            text = "+ тег"
+            isCheckable = false
+            setOnClickListener { showAddCategoryDialog() }
+        }
+        chipGroup.addView(plusChip)
+
+        // Выбираем первую категорию по умолчанию
+        if (chipGroup.childCount > 0) {
+            (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
+        }
+    }
+
+    private fun selectedCategory(): String {
+        val id = chipGroup.checkedChipId
+        if (id == View.NO_ID) return "Разное"
+        val chip = chipGroup.findViewById<Chip>(id)
+        return chip?.text?.toString() ?: "Разное"
+    }
+
+    private fun selectCategory(cat: String) {
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as? Chip ?: continue
+            if (chip.text.toString() == cat) {
+                chip.isChecked = true
+                return
+            }
+        }
+    }
+
+    private fun showAddCategoryDialog() {
+        val input = EditText(this).apply {
+            hint = "Название категории"
+            setPadding(40, 20, 40, 20)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Новая категория")
+            .setView(input)
+            .setPositiveButton("Добавить") { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    repo.addCustomCategory(name)
+                    setupChips()
+                    selectCategory(name)
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    // ---------- АВТОЗАПОЛНЕНИЕ ЦЕНЫ + ТЕГА ----------
+    private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
         val handler = Handler(Looper.getMainLooper())
         var pending: Runnable? = null
 
         edit.setOnItemClickListener { _, _, _, _ ->
-            val name = edit.text.toString().trim()
-            fillPrice(name, priceField)
+            autofill(edit.text.toString().trim(), priceField)
         }
 
         edit.addTextChangedListener(object : TextWatcher {
@@ -144,8 +221,7 @@ class MainActivity : AppCompatActivity() {
                 val r = Runnable {
                     val name = s?.toString()?.trim() ?: return@Runnable
                     if (name.isEmpty()) return@Runnable
-                    if (!priceField.text.isNullOrEmpty()) return@Runnable
-                    fillPrice(name, priceField)
+                    autofill(name, priceField)
                 }
                 pending = r
                 handler.postDelayed(r, 600)
@@ -153,14 +229,20 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun fillPrice(name: String, priceField: EditText) {
-        val last = repo.getLastPrice(name) ?: return
-        if (!priceField.text.isNullOrEmpty()) return
-        val txt = if (last % 1.0 == 0.0) last.toInt().toString()
-                  else String.format("%.2f", last).trimEnd('0').trimEnd('.')
-        priceField.setText(txt)
+    private fun autofill(name: String, priceField: EditText) {
+        // Цена
+        if (priceField.text.isNullOrEmpty()) {
+            repo.getLastPrice(name)?.let { last ->
+                val txt = if (last % 1.0 == 0.0) last.toInt().toString()
+                          else String.format("%.2f", last).trimEnd('0').trimEnd('.')
+                priceField.setText(txt)
+            }
+        }
+        // Категория
+        repo.getCategoryForProduct(name)?.let { selectCategory(it) }
     }
 
+    // ---------- ФИЛЬТР ----------
     private fun applyFilter() {
         displayedItems.clear()
         if (currentCategory == "Все") {
