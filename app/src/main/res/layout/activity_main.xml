@@ -11,33 +11,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="10dp">
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="4dp"
             app:tabMode="scrollable" />
-
-        <AutoCompleteTextView
-            android:id="@+id/editItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_new_item"
-            android:completionThreshold="1"
-            android:inputType="textCapSentences"
-            android:imeOptions="actionDone"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:textSize="16sp" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
@@ -54,31 +40,49 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
 
-            <EditText
-                android:id="@+id/editPrice"
+            <AutoCompleteTextView
+                android:id="@+id/editItem"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:hint="@string/hint_new_item"
+                android:completionThreshold="1"
+                android:inputType="textCapSentences"
+                android:imeOptions="actionDone"
+                android:textSize="15sp"
+                android:maxLines="1" />
+
+            <EditText
+                android:id="@+id/editPrice"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
                 android:hint="@string/hint_price"
-                android:inputType="numberDecimal" />
+                android:inputType="numberDecimal"
+                android:textSize="15sp"
+                android:maxLines="1" />
 
             <EditText
                 android:id="@+id/editQuantity"
-                android:layout_width="100dp"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="6dp"
                 android:hint="@string/hint_qty"
                 android:inputType="number"
-                android:text="1" />
+                android:text="1"
+                android:textSize="15sp"
+                android:maxLines="1" />
         </LinearLayout>
 
         <Button
             android:id="@+id/btnAdd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="4dp"
+            android:minHeight="40dp"
             android:text="@string/add" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -86,13 +90,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="4dp" />
 
         <TextView
             android:id="@+id/textTotal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
+            android:paddingTop="6dp"
             android:paddingBottom="4dp"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -102,6 +106,7 @@
             android:id="@+id/btnClearDone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="40dp"
             android:text="@string/clear_done" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
