@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class ShoppingAdapter(
     private val items: MutableList<ShoppingItem>,
+    private val compact: Boolean,
     private val onChange: () -> Unit,
     private val onDelete: (Int) -> Unit
 ) : RecyclerView.Adapter<ShoppingAdapter.VH>() {
@@ -25,6 +26,10 @@ class ShoppingAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_shopping, parent, false)
+        if (compact) {
+            val d = parent.context.resources.displayMetrics.density
+            v.setPadding(0, (4 * d).toInt(), 0, (4 * d).toInt())
+        }
         return VH(v)
     }
 
