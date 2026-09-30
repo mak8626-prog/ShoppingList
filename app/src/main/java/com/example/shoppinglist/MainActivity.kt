@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
 
         // --- Поднимаем контент при появлении клавиатуры ---
@@ -46,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val base = (12 * resources.displayMetrics.density).toInt()
-            v.setPadding(base, base, base, base + maxOf(ime.bottom, bars.bottom))
+            v.setPadding(base, base + bars.top, base, base + maxOf(ime.bottom, bars.bottom))
             WindowInsetsCompat.CONSUMED
         }
 
