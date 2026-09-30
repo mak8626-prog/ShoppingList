@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Список покупок</string>
+    <string name="hint_new_item">Что купить?</string>
+    <string name="hint_price">Цена</string>
+    <string name="hint_qty">Кол-во</string>
+    <string name="add">Добавить</string>
+    <string name="delete">Удалить</string>
+    <string name="clear_done">Убрать купленное</string>
+    <string name="total_zero">Итого: 0 ₽</string>
+
+    <string-array name="categories">
+        <item>Овощи и фрукты</item>
+        <item>Молочные продукты</item>
+        <item>Мясо и рыба</item>
+        <item>Хлеб и выпечка</item>
+        <item>Напитки</item>
+        <item>Бакалея</item>
+        <item>Заморозка</item>
+        <item>Сладости</item>
+        <item>Бытовая химия</item>
+        <item>Разное</item>
+    </string-array>
+</resources>
