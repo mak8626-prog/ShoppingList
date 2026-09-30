@@ -5,14 +5,16 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="12dp">
 
+        <!-- Заголовок + табы + шестерёнка -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,105 +26,166 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                app:tabMode="scrollable" />
+                app:tabMode="scrollable"
+                app:tabIndicatorColor="?attr/colorPrimary"
+                app:tabSelectedTextColor="?attr/colorPrimary"
+                app:tabTextColor="?attr/colorOnSurfaceVariant" />
 
             <ImageButton
                 android:id="@+id/btnSettings"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginStart="4dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/settings"
-                android:src="@android:drawable/ic_menu_manage"
+                android:src="@drawable/ic_settings"
                 android:scaleType="centerInside" />
         </LinearLayout>
 
-        <HorizontalScrollView
+        <!-- Карточка с формой ввода -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:scrollbars="none">
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="?attr/colorSurfaceVariant"
+            app:strokeWidth="1dp">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroup"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:chipSpacingHorizontal="6dp" />
+                </HorizontalScrollView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/editItem"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/hint_new_item"
+                        android:completionThreshold="1"
+                        android:inputType="textCapSentences"
+                        android:imeOptions="actionDone"
+                        android:textSize="15sp"
+                        android:maxLines="1" />
+
+                    <EditText
+                        android:id="@+id/editPrice"
+                        android:layout_width="66dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:hint="@string/hint_price"
+                        android:inputType="numberDecimal"
+                        android:textSize="15sp"
+                        android:maxLines="1" />
+
+                    <EditText
+                        android:id="@+id/editQuantity"
+                        android:layout_width="46dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:hint="@string/hint_qty"
+                        android:inputType="number"
+                        android:text="1"
+                        android:textSize="15sp"
+                        android:maxLines="1" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAdd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/add"
+                    android:textSize="15sp"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Пустое состояние -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="true"
-                app:selectionRequired="true"
-                app:singleLine="true"
-                app:chipSpacingHorizontal="6dp" />
-        </HorizontalScrollView>
+                android:text="🛒"
+                android:textSize="48sp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical">
-
-            <AutoCompleteTextView
-                android:id="@+id/editItem"
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/hint_new_item"
-                android:completionThreshold="1"
-                android:inputType="textCapSentences"
-                android:imeOptions="actionDone"
+                android:layout_marginTop="8dp"
+                android:text="@string/empty_hint"
                 android:textSize="15sp"
-                android:maxLines="1" />
-
-            <EditText
-                android:id="@+id/editPrice"
-                android:layout_width="70dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:hint="@string/hint_price"
-                android:inputType="numberDecimal"
-                android:textSize="15sp"
-                android:maxLines="1" />
-
-            <EditText
-                android:id="@+id/editQuantity"
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:hint="@string/hint_qty"
-                android:inputType="number"
-                android:text="1"
-                android:textSize="15sp"
-                android:maxLines="1" />
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:gravity="center" />
         </LinearLayout>
-
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:minHeight="40dp"
-            android:text="@string/add" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="8dp" />
 
-        <TextView
-            android:id="@+id/textTotal"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="6dp"
-            android:paddingBottom="4dp"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="@string/total_zero" />
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer">
 
-        <Button
+            <TextView
+                android:id="@+id/textTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="14dp"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:gravity="center"
+                android:text="@string/total_zero" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClearDone"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="40dp"
-            android:text="@string/clear_done" />
+            android:layout_marginTop="6dp"
+            android:text="@string/clear_done"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
