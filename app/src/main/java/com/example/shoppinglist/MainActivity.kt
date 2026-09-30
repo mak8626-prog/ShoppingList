@@ -13,15 +13,18 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
@@ -36,9 +39,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         repo = ShoppingRepository(this)
+
+        // Применяем тёмную тему ДО setContentView
+        AppCompatDelegate.setDefaultNightMode(
+            if (repo.getBool(ShoppingRepository.SET_DARK_THEME, false))
+                AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
+
+        setContentView(R.layout.activity_main)
+
         allItems.addAll(repo.load())
 
         val editItem = findViewById<AutoCompleteTextView>(R.id.editItem)
@@ -46,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         val editQuantity = findViewById<EditText>(R.id.editQuantity)
         val btnAdd = findViewById<Button>(R.id.btnAdd)
         val btnClear = findViewById<Button>(R.id.btnClearDone)
+        val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
@@ -53,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         setupChips()
 
-        // --- Табы ---
+        // Табы
         val cats = listOf("Все") + allCategoryNames()
         cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -68,7 +81,6 @@ class MainActivity : AppCompatActivity() {
         setupAutoComplete(editItem)
         setupAutofill(editItem, editPrice)
 
-        // --- Скрывать клавиатуру при нажатии "Готово" ---
         editItem.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 hideKeyboard(editItem)
@@ -76,18 +88,20 @@ class MainActivity : AppCompatActivity() {
             } else false
         }
 
+        val compact = repo.getBool(ShoppingRepository.SET_COMPACT, false)
         adapter = ShoppingAdapter(
             items = displayedItems,
+            compact = compact,
             onChange = {
                 repo.save(allItems)
-                updateTotal()
+                applyFilter() // чтобы скрыть купленные, если включено
             },
             onDelete = { pos -> syncAfterDelete(pos) }
         )
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
-        // --- Свайп влево для удаления ---
+        // Свайп влево для удаления
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(
             0, ItemTouchHelper.LEFT
         ) {
@@ -127,10 +141,13 @@ class MainActivity : AppCompatActivity() {
             repo.saveCategoryForProduct(name, category)
             setupAutoComplete(editItem)
 
-            editItem.text.clear()
-            editPrice.text.clear()
-            editQuantity.setText("1")
-            editItem.requestFocus()
+            val clearFields = repo.getBool(ShoppingRepository.SET_CLEAR_FIELDS, true)
+            if (clearFields) {
+                editItem.text.clear()
+                editPrice.text.clear()
+                editQuantity.setText("1")
+                editItem.requestFocus()
+            }
 
             repo.save(allItems)
             applyFilter()
@@ -147,7 +164,39 @@ class MainActivity : AppCompatActivity() {
             applyFilter()
         }
 
+        btnSettings.setOnClickListener { showSettings() }
+
         applyFilter()
+    }
+
+    // ---------- НАСТРОЙКИ ----------
+    private fun showSettings() {
+        val view = layoutInflater.inflate(R.layout.dialog_settings, null)
+        val swDark = view.findViewById<MaterialSwitch>(R.id.swDarkTheme)
+        val swCompact = view.findViewById<MaterialSwitch>(R.id.swCompact)
+        val swShowDone = view.findViewById<MaterialSwitch>(R.id.swShowDone)
+        val swShowTotal = view.findViewById<MaterialSwitch>(R.id.swShowTotal)
+        val swClearFields = view.findViewById<MaterialSwitch>(R.id.swClearFields)
+
+        swDark.isChecked = repo.getBool(ShoppingRepository.SET_DARK_THEME, false)
+        swCompact.isChecked = repo.getBool(ShoppingRepository.SET_COMPACT, false)
+        swShowDone.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
+        swShowTotal.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
+        swClearFields.isChecked = repo.getBool(ShoppingRepository.SET_CLEAR_FIELDS, true)
+
+        AlertDialog.Builder(this)
+            .setTitle("Настройки")
+            .setView(view)
+            .setPositiveButton("Ок") { _, _ ->
+                repo.setBool(ShoppingRepository.SET_DARK_THEME, swDark.isChecked)
+                repo.setBool(ShoppingRepository.SET_COMPACT, swCompact.isChecked)
+                repo.setBool(ShoppingRepository.SET_SHOW_DONE, swShowDone.isChecked)
+                repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, swShowTotal.isChecked)
+                repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, swClearFields.isChecked)
+                recreate()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun syncAfterDelete(pos: Int) {
@@ -230,7 +279,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- АВТОЗАПОЛНЕНИЕ ЦЕНЫ + ТЕГА ----------
+    // ---------- АВТОЗАПОЛНЕНИЕ ----------
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
         val handler = Handler(Looper.getMainLooper())
         var pending: Runnable? = null
@@ -269,12 +318,19 @@ class MainActivity : AppCompatActivity() {
     // ---------- ФИЛЬТР ----------
     private fun applyFilter() {
         displayedItems.clear()
-        if (currentCategory == "Все") {
-            displayedItems.addAll(allItems)
-        } else {
-            displayedItems.addAll(allItems.filter { it.category == currentCategory })
-        }
+        val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
+
+        val byCategory = if (currentCategory == "Все") allItems
+                         else allItems.filter { it.category == currentCategory }
+
+        displayedItems.addAll(if (showDone) byCategory else byCategory.filter { !it.done })
+
         adapter.notifyDataSetChanged()
+
+        // Показывать/скрывать итог
+        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
+        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
+
         updateTotal()
     }
 
