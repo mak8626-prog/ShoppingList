@@ -14,6 +14,7 @@ import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ShoppingAdapter
     private lateinit var textTotal: TextView
     private lateinit var chipGroup: ChipGroup
+    private lateinit var emptyState: LinearLayout
     private val allItems = mutableListOf<ShoppingItem>()
     private val displayedItems = mutableListOf<ShoppingItem>()
     private var currentCategory: String = "Все"
@@ -42,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
         repo = ShoppingRepository(this)
 
-        // Применяем тёмную тему ДО setContentView
         AppCompatDelegate.setDefaultNightMode(
             if (repo.getBool(ShoppingRepository.SET_DARK_THEME, false))
                 AppCompatDelegate.MODE_NIGHT_YES
@@ -63,10 +64,10 @@ class MainActivity : AppCompatActivity() {
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
         textTotal = findViewById(R.id.textTotal)
+        emptyState = findViewById(R.id.emptyState)
 
         setupChips()
 
-        // Табы
         val cats = listOf("Все") + allCategoryNames()
         cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -94,14 +95,13 @@ class MainActivity : AppCompatActivity() {
             compact = compact,
             onChange = {
                 repo.save(allItems)
-                applyFilter() // чтобы скрыть купленные, если включено
+                applyFilter()
             },
             onDelete = { pos -> syncAfterDelete(pos) }
         )
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
-        // Свайп влево для удаления
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(
             0, ItemTouchHelper.LEFT
         ) {
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                 allItems.remove(removed)
                 adapter.notifyItemRemoved(pos)
                 repo.save(allItems)
-                updateTotal()
+                applyFilter()
             }
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recycler)
@@ -169,7 +169,6 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
-    // ---------- НАСТРОЙКИ ----------
     private fun showSettings() {
         val view = layoutInflater.inflate(R.layout.dialog_settings, null)
         val swDark = view.findViewById<MaterialSwitch>(R.id.swDarkTheme)
@@ -203,7 +202,7 @@ class MainActivity : AppCompatActivity() {
         val toRemove = allItems.filter { item -> !displayedItems.contains(item) }
         allItems.removeAll(toRemove)
         repo.save(allItems)
-        updateTotal()
+        applyFilter()
     }
 
     private fun hideKeyboard(view: View) {
@@ -212,7 +211,6 @@ class MainActivity : AppCompatActivity() {
         view.clearFocus()
     }
 
-    // ---------- ЧИПЫ ----------
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
         return (base + repo.loadCustomCategories()).distinct()
@@ -279,7 +277,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- АВТОЗАПОЛНЕНИЕ ----------
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
         val handler = Handler(Looper.getMainLooper())
         var pending: Runnable? = null
@@ -315,7 +312,6 @@ class MainActivity : AppCompatActivity() {
         repo.getCategoryForProduct(name)?.let { selectCategory(it) }
     }
 
-    // ---------- ФИЛЬТР ----------
     private fun applyFilter() {
         displayedItems.clear()
         val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
@@ -327,7 +323,9 @@ class MainActivity : AppCompatActivity() {
 
         adapter.notifyDataSetChanged()
 
-        // Показывать/скрывать итог
+        // Пустое состояние
+        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
+
         val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
         textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
 
