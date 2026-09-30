@@ -1,4 +1,5 @@
 <resources>
+    <string name="empty_hint">Список пуст.\nДобавь первый товар!</string>
     <string name="app_name">Список покупок</string>
     <string name="hint_new_item">Что купить?</string>
     <string name="hint_price">Цена</string>
