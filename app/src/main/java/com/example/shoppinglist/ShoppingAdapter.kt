@@ -5,18 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class ShoppingAdapter(
     private val items: MutableList<ShoppingItem>,
-    private val onChange: () -> Unit
+    private val onChange: () -> Unit,
+    private val onDelete: (Int) -> Unit
 ) : RecyclerView.Adapter<ShoppingAdapter.VH>() {
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {
         val check: CheckBox = view.findViewById(R.id.checkBox)
         val text: TextView = view.findViewById(R.id.textName)
         val details: TextView = view.findViewById(R.id.textDetails)
+        val delete: ImageButton = view.findViewById(R.id.btnDelete)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -47,6 +50,15 @@ class ShoppingAdapter(
             strike(holder.text, isChecked)
             strike(holder.details, isChecked)
             onChange()
+        }
+
+        holder.delete.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                items.removeAt(pos)
+                notifyItemRemoved(pos)
+                onDelete(pos)
+            }
         }
     }
 
