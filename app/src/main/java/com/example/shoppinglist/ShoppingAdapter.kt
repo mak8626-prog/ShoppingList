@@ -1,74 +1,84 @@
-package com.example.shoppinglist
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp">
 
-import android.graphics.Paint
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.ImageButton
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:tabMode="scrollable" />
 
-class ShoppingAdapter(
-    private val items: MutableList<ShoppingItem>,
-    private val onChange: () -> Unit
-) : RecyclerView.Adapter<ShoppingAdapter.VH>() {
+    <AutoCompleteTextView
+        android:id="@+id/editItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_new_item"
+        android:completionThreshold="1"
+        android:inputType="textCapSentences" />
 
-    class VH(view: View) : RecyclerView.ViewHolder(view) {
-        val check: CheckBox = view.findViewById(R.id.checkBox)
-        val text: TextView = view.findViewById(R.id.textName)
-        val details: TextView = view.findViewById(R.id.textDetails)
-        val delete: ImageButton = view.findViewById(R.id.btnDelete)
-    }
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp">
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_shopping, parent, false)
-        return VH(v)
-    }
+        <Spinner
+            android:id="@+id/spinnerCategory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/categories" />
 
-    override fun getItemCount() = items.size
+        <EditText
+            android:id="@+id/editPrice"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:hint="@string/hint_price"
+            android:inputType="numberDecimal" />
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val item = items[position]
-        holder.text.text = item.name
+        <EditText
+            android:id="@+id/editQuantity"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:hint="@string/hint_qty"
+            android:inputType="number"
+            android:text="1" />
+    </LinearLayout>
 
-        val priceStr = if (item.price > 0)
-            "${formatPrice(item.price)} ₽ × ${item.quantity} = ${formatPrice(item.total)} ₽"
-        else
-            "×${item.quantity}"
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/add" />
 
-        holder.details.text = "${item.category} • $priceStr"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
 
-        holder.check.isChecked = item.done
-        strike(holder.text, item.done)
-        strike(holder.details, item.done)
+    <TextView
+        android:id="@+id/textTotal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="@string/total_zero" />
 
-        holder.check.setOnCheckedChangeListener { _, isChecked ->
-            item.done = isChecked
-            strike(holder.text, isChecked)
-            strike(holder.details, isChecked)
-            onChange()
-        }
-
-        holder.delete.setOnClickListener {
-            val pos = holder.bindingAdapterPosition
-            if (pos != RecyclerView.NO_POSITION) {
-                items.removeAt(pos)
-                notifyItemRemoved(pos)
-                onChange()
-            }
-        }
-    }
-
-    private fun strike(tv: TextView, done: Boolean) {
-        tv.paintFlags = if (done)
-            tv.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-        else
-            tv.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-    }
-
-    private fun formatPrice(v: Double): String =
-        if (v % 1.0 == 0.0) v.toInt().toString()
-        else String.format("%.2f", v).trimEnd('0').trimEnd('.')
-}
+    <Button
+        android:id="@+id/btnClearDone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/clear_done" />
+</LinearLayout>
