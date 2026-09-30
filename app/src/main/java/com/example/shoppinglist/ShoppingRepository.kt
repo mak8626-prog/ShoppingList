@@ -53,8 +53,25 @@ class ShoppingRepository(context: Context) {
         prefs.edit().putStringSet(KEY_HISTORY, trimmed).apply()
     }
 
+    // --- Запоминание последней цены ---
+    fun saveLastPrice(name: String, price: Double) {
+        if (price <= 0 || name.isBlank()) return
+        val json = prefs.getString(KEY_PRICES, null)
+        val obj = if (json != null) JSONObject(json) else JSONObject()
+        obj.put(name.trim().lowercase(), price)
+        prefs.edit().putString(KEY_PRICES, obj.toString()).apply()
+    }
+
+    fun getLastPrice(name: String): Double? {
+        val json = prefs.getString(KEY_PRICES, null) ?: return null
+        val obj = JSONObject(json)
+        val key = name.trim().lowercase()
+        return if (obj.has(key)) obj.getDouble(key) else null
+    }
+
     companion object {
         private const val KEY_ITEMS = "items"
         private const val KEY_HISTORY = "history"
+        private const val KEY_PRICES = "prices"
     }
 }
