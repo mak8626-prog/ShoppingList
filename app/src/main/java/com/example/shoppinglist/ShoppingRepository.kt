@@ -52,7 +52,6 @@ class ShoppingRepository(context: Context) {
         prefs.edit().putStringSet(KEY_HISTORY, trimmed).apply()
     }
 
-    // Запоминание последней цены
     fun saveLastPrice(name: String, price: Double) {
         if (price <= 0 || name.isBlank()) return
         val obj = getPricesObj()
@@ -71,7 +70,6 @@ class ShoppingRepository(context: Context) {
         return if (json != null) JSONObject(json) else JSONObject()
     }
 
-    // Запоминание категории (тега) для товара
     fun saveCategoryForProduct(name: String, category: String) {
         if (name.isBlank() || category.isBlank()) return
         val obj = getCategoriesObj()
@@ -90,7 +88,6 @@ class ShoppingRepository(context: Context) {
         return if (json != null) JSONObject(json) else JSONObject()
     }
 
-    // Пользовательские категории
     fun loadCustomCategories(): MutableSet<String> {
         return prefs.getStringSet(KEY_CUSTOM_CATS, emptySet())?.toMutableSet() ?: mutableSetOf()
     }
@@ -101,11 +98,22 @@ class ShoppingRepository(context: Context) {
         prefs.edit().putStringSet(KEY_CUSTOM_CATS, cats).apply()
     }
 
+    // --- Настройки ---
+    fun getBool(key: String, def: Boolean): Boolean = prefs.getBoolean(key, def)
+    fun setBool(key: String, value: Boolean) { prefs.edit().putBoolean(key, value).apply() }
+
     companion object {
-        private const val KEY_ITEMS = "items"
-        private const val KEY_HISTORY = "history"
-        private const val KEY_PRICES = "prices"
-        private const val KEY_PRODUCT_CATS = "product_cats"
-        private const val KEY_CUSTOM_CATS = "custom_cats"
+        const val KEY_ITEMS = "items"
+        const val KEY_HISTORY = "history"
+        const val KEY_PRICES = "prices"
+        const val KEY_PRODUCT_CATS = "product_cats"
+        const val KEY_CUSTOM_CATS = "custom_cats"
+
+        // Настройки
+        const val SET_DARK_THEME = "dark_theme"
+        const val SET_COMPACT = "compact_mode"
+        const val SET_SHOW_DONE = "show_done"
+        const val SET_SHOW_TOTAL = "show_total"
+        const val SET_CLEAR_FIELDS = "clear_fields"
     }
 }
