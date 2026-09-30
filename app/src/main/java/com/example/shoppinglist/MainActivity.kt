@@ -1,6 +1,10 @@
 package com.example.shoppinglist
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -39,7 +43,18 @@ class MainActivity : AppCompatActivity() {
         val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
         textTotal = findViewById(R.id.textTotal)
 
-        // Табы категорий
+        // --- Спиннер: "Все" первым ---
+        val spinnerItems = mutableListOf("Все")
+        spinnerItems.addAll(resources.getStringArray(R.array.categories))
+        val spinnerAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            spinnerItems
+        )
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCategory.adapter = spinnerAdapter
+
+        // --- Табы ---
         val cats = listOf("Все") + resources.getStringArray(R.array.categories).toList()
         cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -52,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         setupAutoComplete(editItem)
+        setupPriceAutofill(editItem, editPrice)
 
         adapter = ShoppingAdapter(
             items = displayedItems,
@@ -75,13 +91,16 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val category = spinnerCategory.selectedItem.toString()
+            var category = spinnerCategory.selectedItem.toString()
+            if (category == "Все") category = "Разное"
+
             val price = editPrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
             val quantity = editQuantity.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
 
             allItems.add(ShoppingItem(name, category, price, quantity))
 
             repo.addToHistory(name)
+            repo.saveLastPrice(name, price)
             setupAutoComplete(editItem)
 
             editItem.text.clear()
@@ -105,6 +124,41 @@ class MainActivity : AppCompatActivity() {
         }
 
         applyFilter()
+    }
+
+    // При выборе из выпадашки — подставить последнюю цену
+    private fun setupPriceAutofill(edit: AutoCompleteTextView, priceField: EditText) {
+        val handler = Handler(Looper.getMainLooper())
+        var pending: Runnable? = null
+
+        edit.setOnItemClickListener { _, _, _, _ ->
+            val name = edit.text.toString().trim()
+            fillPrice(name, priceField)
+        }
+
+        edit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                pending?.let { handler.removeCallbacks(it) }
+                val r = Runnable {
+                    val name = s?.toString()?.trim() ?: return@Runnable
+                    if (name.isEmpty()) return@Runnable
+                    if (!priceField.text.isNullOrEmpty()) return@Runnable
+                    fillPrice(name, priceField)
+                }
+                pending = r
+                handler.postDelayed(r, 600)
+            }
+        })
+    }
+
+    private fun fillPrice(name: String, priceField: EditText) {
+        val last = repo.getLastPrice(name) ?: return
+        if (!priceField.text.isNullOrEmpty()) return
+        val txt = if (last % 1.0 == 0.0) last.toInt().toString()
+                  else String.format("%.2f", last).trimEnd('0').trimEnd('.')
+        priceField.setText(txt)
     }
 
     private fun applyFilter() {
