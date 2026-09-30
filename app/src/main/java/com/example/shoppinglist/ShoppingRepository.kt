@@ -42,8 +42,7 @@ class ShoppingRepository(context: Context) {
     }
 
     fun loadHistory(): MutableSet<String> {
-        val raw = prefs.getStringSet(KEY_HISTORY, emptySet()) ?: emptySet()
-        return raw.toMutableSet()
+        return prefs.getStringSet(KEY_HISTORY, emptySet())?.toMutableSet() ?: mutableSetOf()
     }
 
     fun addToHistory(name: String) {
@@ -53,25 +52,60 @@ class ShoppingRepository(context: Context) {
         prefs.edit().putStringSet(KEY_HISTORY, trimmed).apply()
     }
 
-    // --- Запоминание последней цены ---
+    // Запоминание последней цены
     fun saveLastPrice(name: String, price: Double) {
         if (price <= 0 || name.isBlank()) return
-        val json = prefs.getString(KEY_PRICES, null)
-        val obj = if (json != null) JSONObject(json) else JSONObject()
+        val obj = getPricesObj()
         obj.put(name.trim().lowercase(), price)
         prefs.edit().putString(KEY_PRICES, obj.toString()).apply()
     }
 
     fun getLastPrice(name: String): Double? {
-        val json = prefs.getString(KEY_PRICES, null) ?: return null
-        val obj = JSONObject(json)
+        val obj = getPricesObj()
         val key = name.trim().lowercase()
         return if (obj.has(key)) obj.getDouble(key) else null
+    }
+
+    private fun getPricesObj(): JSONObject {
+        val json = prefs.getString(KEY_PRICES, null)
+        return if (json != null) JSONObject(json) else JSONObject()
+    }
+
+    // Запоминание категории (тега) для товара
+    fun saveCategoryForProduct(name: String, category: String) {
+        if (name.isBlank() || category.isBlank()) return
+        val obj = getCategoriesObj()
+        obj.put(name.trim().lowercase(), category)
+        prefs.edit().putString(KEY_PRODUCT_CATS, obj.toString()).apply()
+    }
+
+    fun getCategoryForProduct(name: String): String? {
+        val obj = getCategoriesObj()
+        val key = name.trim().lowercase()
+        return if (obj.has(key)) obj.getString(key) else null
+    }
+
+    private fun getCategoriesObj(): JSONObject {
+        val json = prefs.getString(KEY_PRODUCT_CATS, null)
+        return if (json != null) JSONObject(json) else JSONObject()
+    }
+
+    // Пользовательские категории
+    fun loadCustomCategories(): MutableSet<String> {
+        return prefs.getStringSet(KEY_CUSTOM_CATS, emptySet())?.toMutableSet() ?: mutableSetOf()
+    }
+
+    fun addCustomCategory(name: String) {
+        val cats = loadCustomCategories()
+        cats.add(name.trim())
+        prefs.edit().putStringSet(KEY_CUSTOM_CATS, cats).apply()
     }
 
     companion object {
         private const val KEY_ITEMS = "items"
         private const val KEY_HISTORY = "history"
         private const val KEY_PRICES = "prices"
+        private const val KEY_PRODUCT_CATS = "product_cats"
+        private const val KEY_CUSTOM_CATS = "custom_cats"
     }
 }
