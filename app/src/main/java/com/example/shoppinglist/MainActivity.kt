@@ -71,17 +71,23 @@ class MainActivity : AppCompatActivity() {
         // --- Скрывать клавиатуру при нажатии "Готово" ---
         editItem.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(editItem.windowToken, 0)
-                editItem.clearFocus()
+                hideKeyboard(editItem)
                 true
             } else false
         }
 
-        adapter = ShoppingAdapter(displayedItems) {
-            repo.save(allItems)
-            updateTotal()
-        }
+        adapter = ShoppingAdapter(
+            items = displayedItems,
+            onChange = {
+                repo.save(allItems)
+                updateTotal()
+            },
+            onDelete = { pos ->
+                // Ищем удалённый элемент в общем списке через позицию в displayedItems — уже удалён,
+                // поэтому просто синхронизируем: удаляем из allItems того, кого нет в displayedItems
+                syncAfterDelete(pos)
+            }
+        )
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
@@ -98,8 +104,8 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val pos = viewHolder.bindingAdapterPosition
                 if (pos == RecyclerView.NO_POSITION) return
-                val item = displayedItems.removeAt(pos)
-                allItems.remove(item)
+                val removed = displayedItems.removeAt(pos)
+                allItems.remove(removed)
                 adapter.notifyItemRemoved(pos)
                 repo.save(allItems)
                 updateTotal()
@@ -133,9 +139,7 @@ class MainActivity : AppCompatActivity() {
             repo.save(allItems)
             applyFilter()
 
-            // Скрыть клавиатуру после добавления
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(editItem.windowToken, 0)
+            hideKeyboard(editItem)
         }
 
         btnClear.setOnClickListener {
@@ -150,6 +154,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         applyFilter()
+    }
+
+    /**
+     * Кнопка-корзина уже удалила элемент из displayedItems и вызвала onDelete.
+     * Здесь удаляем его же из allItems. Поскольку после удаления из displayedItems
+     * индексы сместились, находим соответствующий элемент по ссылке:
+     * (до удаления adapter взял его по позиции — синхронизация через полное сравнение).
+     */
+    private fun syncAfterDelete(pos: Int) {
+        // displayedItems уже без удалённого элемента. Найдём в allItems всё, чего нет в displayedItems.
+        val toRemove = allItems.filter { item -> !displayedItems.contains(item) }
+        allItems.removeAll(toRemove)
+        repo.save(allItems)
+        updateTotal()
+    }
+
+    private fun hideKeyboard(view: View) {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+        view.clearFocus()
     }
 
     // ---------- ЧИПЫ ----------
@@ -178,7 +202,6 @@ class MainActivity : AppCompatActivity() {
         }
         chipGroup.addView(plusChip)
 
-        // Выбираем первую категорию по умолчанию
         if (chipGroup.childCount > 0) {
             (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
         }
@@ -247,7 +270,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun autofill(name: String, priceField: EditText) {
-        // Цена
         if (priceField.text.isNullOrEmpty()) {
             repo.getLastPrice(name)?.let { last ->
                 val txt = if (last % 1.0 == 0.0) last.toInt().toString()
@@ -255,7 +277,6 @@ class MainActivity : AppCompatActivity() {
                 priceField.setText(txt)
             }
         }
-        // Категория
         repo.getCategoryForProduct(name)?.let { selectCategory(it) }
     }
 
