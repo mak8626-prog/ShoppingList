@@ -17,9 +17,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,18 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
-
-        // --- Поднимаем контент при появлении клавиатуры ---
-        val root = findViewById<View>(R.id.rootLayout)
-        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val base = (12 * resources.displayMetrics.density).toInt()
-            v.setPadding(base, base + bars.top, base, base + maxOf(ime.bottom, bars.bottom))
-            WindowInsetsCompat.CONSUMED
-        }
 
         repo = ShoppingRepository(this)
         allItems.addAll(repo.load())
@@ -96,9 +82,7 @@ class MainActivity : AppCompatActivity() {
                 repo.save(allItems)
                 updateTotal()
             },
-            onDelete = { pos ->
-                syncAfterDelete(pos)
-            }
+            onDelete = { pos -> syncAfterDelete(pos) }
         )
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
@@ -150,8 +134,6 @@ class MainActivity : AppCompatActivity() {
 
             repo.save(allItems)
             applyFilter()
-
-            hideKeyboard(editItem)
         }
 
         btnClear.setOnClickListener {
