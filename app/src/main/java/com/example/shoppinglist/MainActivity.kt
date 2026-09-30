@@ -17,6 +17,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,6 +39,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // --- Поднимаем контент при появлении клавиатуры ---
+        val root = findViewById<View>(R.id.rootLayout)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val base = (12 * resources.displayMetrics.density).toInt()
+            v.setPadding(base, base, base, base + maxOf(ime.bottom, bars.bottom))
+            WindowInsetsCompat.CONSUMED
+        }
 
         repo = ShoppingRepository(this)
         allItems.addAll(repo.load())
@@ -83,8 +95,6 @@ class MainActivity : AppCompatActivity() {
                 updateTotal()
             },
             onDelete = { pos ->
-                // Ищем удалённый элемент в общем списке через позицию в displayedItems — уже удалён,
-                // поэтому просто синхронизируем: удаляем из allItems того, кого нет в displayedItems
                 syncAfterDelete(pos)
             }
         )
@@ -156,14 +166,7 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
-    /**
-     * Кнопка-корзина уже удалила элемент из displayedItems и вызвала onDelete.
-     * Здесь удаляем его же из allItems. Поскольку после удаления из displayedItems
-     * индексы сместились, находим соответствующий элемент по ссылке:
-     * (до удаления adapter взял его по позиции — синхронизация через полное сравнение).
-     */
     private fun syncAfterDelete(pos: Int) {
-        // displayedItems уже без удалённого элемента. Найдём в allItems всё, чего нет в displayedItems.
         val toRemove = allItems.filter { item -> !displayedItems.contains(item) }
         allItems.removeAll(toRemove)
         repo.save(allItems)
@@ -194,7 +197,6 @@ class MainActivity : AppCompatActivity() {
             chipGroup.addView(chip)
         }
 
-        // Кнопка "+" для добавления новой категории
         val plusChip = Chip(this).apply {
             text = "+ тег"
             isCheckable = false
