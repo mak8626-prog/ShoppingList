@@ -5,10 +5,10 @@
     android:id="@+id/cardItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
     app:cardCornerRadius="14dp"
-    app:cardElevation="1dp"
+    app:cardElevation="2dp"
     app:cardBackgroundColor="?attr/colorSurface"
     app:strokeColor="?attr/colorSurfaceVariant"
     app:strokeWidth="1dp">
@@ -20,8 +20,8 @@
         android:gravity="center_vertical"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
-        android:paddingTop="6dp"
-        android:paddingBottom="6dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <CheckBox
             android:id="@+id/checkBox"
