@@ -29,6 +29,7 @@ import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
@@ -93,7 +94,7 @@ class MainActivity : AppCompatActivity() {
                 repo.save(allItems)
                 applyFilter()
             },
-            onDelete = { pos -> syncAfterDelete(pos) },
+            onDelete = { pos -> removeWithUndo(pos) },
             onEdit = { pos -> showEditDialog(pos) }
         )
         recycler.layoutManager = LinearLayoutManager(this)
@@ -111,11 +112,7 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val pos = viewHolder.bindingAdapterPosition
                 if (pos == RecyclerView.NO_POSITION) return
-                val removed = displayedItems.removeAt(pos)
-                allItems.remove(removed)
-                adapter.notifyItemRemoved(pos)
-                repo.save(allItems)
-                applyFilter()
+                removeWithUndo(pos)
             }
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recycler)
@@ -164,6 +161,30 @@ class MainActivity : AppCompatActivity() {
         btnSettings.setOnClickListener { showSettings() }
 
         applyFilter()
+    }
+
+    // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
+    private fun removeWithUndo(pos: Int) {
+        if (pos < 0 || pos >= displayedItems.size) return
+        val removed = displayedItems.removeAt(pos)
+        val globalIndex = allItems.indexOf(removed)
+        if (globalIndex >= 0) allItems.removeAt(globalIndex)
+        adapter.notifyItemRemoved(pos)
+        repo.save(allItems)
+        applyFilter()
+
+        val coord = findViewById<View>(R.id.coordinator)
+        Snackbar.make(coord, "«${removed.name}» удалён", Snackbar.LENGTH_LONG)
+            .setAction("Вернуть") {
+                if (globalIndex >= 0 && globalIndex <= allItems.size) {
+                    allItems.add(globalIndex, removed)
+                } else {
+                    allItems.add(removed)
+                }
+                repo.save(allItems)
+                applyFilter()
+            }
+            .show()
     }
 
     // ---------- РЕДАКТИРОВАНИЕ ----------
@@ -258,13 +279,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Отмена", null)
             .show()
-    }
-
-    private fun syncAfterDelete(pos: Int) {
-        val toRemove = allItems.filter { item -> !displayedItems.contains(item) }
-        allItems.removeAll(toRemove)
-        repo.save(allItems)
-        applyFilter()
     }
 
     private fun hideKeyboard(view: View) {
