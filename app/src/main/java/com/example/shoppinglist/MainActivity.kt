@@ -230,26 +230,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChips() {
-        chipGroup.removeAllViews()
-        // Отключаем минимальный размер тач-таргета — иначе Material сам раздувает чипы
-        chipGroup.isEnsureMinTouchTargetSize = false
-
-        val cats = allCategoryNames()
-        cats.forEach { cat ->
-            val chip = Chip(this).apply {
-                text = cat
-                isCheckable = true
-                isClickable = true
-                textSize = 11f
-                chipMinHeight = 20f * resources.displayMetrics.density
-                chipStartPadding = 4f
-                chipEndPadding = 4f
-                chipIconSize = 0f
-                ensureMinTouchTargetSize = false
-                setPadding(0, 0, 0, 0)
-            }
-            chipGroup.addView(chip)
+    chipGroup.removeAllViews()
+    val cats = allCategoryNames()
+    cats.forEach { cat ->
+        val chip = Chip(this).apply {
+            text = cat
+            isCheckable = true
+            isClickable = true
+            textSize = 11f
+            chipMinHeight = 20f * resources.displayMetrics.density
+            chipStartPadding = 4f
+            chipEndPadding = 4f
+            setPadding(0, 0, 0, 0)
         }
+        chipGroup.addView(chip)
+    }
+
+    val plusChip = Chip(this).apply {
+        text = "+ тег"
+        isCheckable = false
+        textSize = 11f
+        chipMinHeight = 20f * resources.displayMetrics.density
+        chipStartPadding = 4f
+        chipEndPadding = 4f
+        setPadding(0, 0, 0, 0)
+        setOnClickListener { showAddCategoryDialog() }
+    }
+    chipGroup.addView(plusChip)
+
+    if (chipGroup.childCount > 0) {
+        (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
+    }
+    }
 
         val plusChip = Chip(this).apply {
             text = "+ тег"
