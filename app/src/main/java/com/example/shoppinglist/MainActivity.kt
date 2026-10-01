@@ -254,7 +254,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectedCategory(): String {
-        // Если теги скрыты — всегда "Разное"
         if (!repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) return "Разное"
 
         val id = chipGroup.checkedChipId
@@ -320,6 +319,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun autofill(name: String, priceField: EditText) {
+        // Цена: сначала последняя сохранённая пользователем
         if (priceField.text.isNullOrEmpty()) {
             repo.getLastPrice(name)?.let { last ->
                 val txt = if (last % 1.0 == 0.0) last.toInt().toString()
@@ -327,9 +327,12 @@ class MainActivity : AppCompatActivity() {
                 priceField.setText(txt)
             }
         }
-        // Категорию подставляем только если теги включены
+
+        // Категория: сначала пользовательская, потом из популярных
         if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
-            repo.getCategoryForProduct(name)?.let { selectCategory(it) }
+            val userCat = repo.getCategoryForProduct(name)
+            val popularCat = PopularProducts.getCategory(name)
+            (userCat ?: popularCat)?.let { selectCategory(it) }
         }
     }
 
@@ -338,11 +341,9 @@ class MainActivity : AppCompatActivity() {
         val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
         val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
 
-        // Скрываем/показываем чипы и табы
         chipGroup.visibility = if (showTags) View.VISIBLE else View.GONE
         tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
 
-        // Если табы скрыты — сбрасываем фильтр
         if (!showTabs) currentCategory = "Все"
 
         displayedItems.clear()
@@ -363,12 +364,16 @@ class MainActivity : AppCompatActivity() {
         updateTotal()
     }
 
+    // ---------- АВТОДОПОЛНЕНИЕ: популярные + история ----------
     private fun setupAutoComplete(edit: AutoCompleteTextView) {
-        val history = repo.loadHistory().toList().sorted()
+        val history = repo.loadHistory().toList()
+        val popular = PopularProducts.names
+        // Пользовательская история — в приоритете, потом популярные
+        val all = (history + popular).distinct()
         val adapter = ArrayAdapter(
             this,
             android.R.layout.simple_dropdown_item_1line,
-            history
+            all
         )
         edit.setAdapter(adapter)
     }
