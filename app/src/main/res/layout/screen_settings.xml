@@ -30,7 +30,7 @@
             android:id="@+id/swShowTags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Показывать теги (чипы)"
+            android:text="Показывать категории"
             android:paddingTop="8dp"
             android:paddingBottom="8dp" />
 
