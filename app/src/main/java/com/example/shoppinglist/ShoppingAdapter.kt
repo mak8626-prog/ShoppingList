@@ -57,6 +57,9 @@ class ShoppingAdapter(
         holder.card.strokeColor = accent
         holder.card.strokeWidth = (2 * holder.card.resources.displayMetrics.density).toInt()
 
+        // СНАЧАЛА снимаем listener, потом ставим состояние — иначе при переиспользовании
+        // ViewHolder старое значение вызовет onCheckedChanged и краш
+        holder.check.setOnCheckedChangeListener(null)
         holder.check.isChecked = item.done
         strike(holder.text, item.done)
         strike(holder.details, item.done)
@@ -65,10 +68,10 @@ class ShoppingAdapter(
             item.done = isChecked
             strike(holder.text, isChecked)
             strike(holder.details, isChecked)
-            onChange()
+            // Откладываем обновление — нельзя перестраивать список внутри клика
+            holder.itemView.post { onChange() }
         }
 
-        // Удаление — только уведомляем MainActivity. Она сама всё сделает.
         holder.delete.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) {
