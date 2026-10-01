@@ -1,16 +1,9 @@
 package com.example.shoppinglist
 
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -34,21 +27,19 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var repo: ShoppingRepository
     private lateinit var adapter: ShoppingAdapter
-    private lateinit var recipesAdapter: RecipesAdapter
 
-    // Экраны
     private lateinit var screenList: View
     private lateinit var screenRecipes: View
     private lateinit var screenSettings: View
     private lateinit var fabAdd: ExtendedFloatingActionButton
 
-    // Список
-    private lateinit var chipGroup: ChipGroup
+    private lateinit var tabLayout: TabLayout
     private lateinit var recycler: RecyclerView
     private lateinit var emptyState: LinearLayout
     private lateinit var textTotal: TextView
@@ -74,21 +65,19 @@ class MainActivity : AppCompatActivity() {
 
         allItems.addAll(repo.load())
 
-        // Находим экраны
         screenList = findViewById(R.id.screenList)
         screenRecipes = findViewById(R.id.screenRecipes)
         screenSettings = findViewById(R.id.screenSettings)
         fabAdd = findViewById(R.id.fabAdd)
 
-        // Список
-        chipGroup = findViewById(R.id.chipGroup)
+        tabLayout = findViewById(R.id.tabLayout)
         recycler = findViewById(R.id.recycler)
         emptyState = findViewById(R.id.emptyState)
         textTotal = findViewById(R.id.textTotal)
         cardTotal = findViewById(R.id.cardTotal)
         btnClearDone = findViewById(R.id.btnClearDone)
 
-        setupMainChips()
+        setupTabs()
 
         val compact = repo.getBool(ShoppingRepository.SET_COMPACT, false)
         adapter = ShoppingAdapter(
@@ -132,18 +121,14 @@ class MainActivity : AppCompatActivity() {
             applyFilter()
         }
 
-        // Рецепты
         val recipesRecycler = findViewById<RecyclerView>(R.id.recipesRecycler)
         recipesRecycler.layoutManager = LinearLayoutManager(this)
-        recipesAdapter = RecipesAdapter(DishTemplates.dishes) { dish ->
+        recipesRecycler.adapter = RecipesAdapter(DishTemplates.dishes) { dish ->
             addDishIngredients(dish)
         }
-        recipesRecycler.adapter = recipesAdapter
 
-        // Настройки
         setupSettingsScreen()
 
-        // Навигация
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -154,14 +139,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // FAB — открывает Bottom Sheet
         fabAdd.setOnClickListener { showAddSheet() }
 
         showScreen(0)
         applyFilter()
     }
 
-    // ---------- ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ----------
     private fun showScreen(index: Int) {
         screenList.visibility = if (index == 0) View.VISIBLE else View.GONE
         screenRecipes.visibility = if (index == 1) View.VISIBLE else View.GONE
@@ -169,7 +152,22 @@ class MainActivity : AppCompatActivity() {
         fabAdd.visibility = if (index == 0) View.VISIBLE else View.GONE
     }
 
-    // ---------- НИЖНИЙ ЛИСТ (ДОБАВЛЕНИЕ ТОВАРА) ----------
+    // ---------- ТАБЫ ----------
+    private fun setupTabs() {
+        tabLayout.removeAllTabs()
+        val cats = listOf("Все") + allCategoryNames()
+        cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                currentCategory = tab?.text?.toString() ?: "Все"
+                applyFilter()
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    // ---------- НИЖНИЙ ЛИСТ (ФОРМА) ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -181,10 +179,8 @@ class MainActivity : AppCompatActivity() {
         val bsEditQty = view.findViewById<EditText>(R.id.bsEditQuantity)
         val bsBtnAdd = view.findViewById<Button>(R.id.bsBtnAdd)
 
-        // Чипы в шите
         setupChipsInto(bsChips)
 
-        // Автодополнение
         val history = repo.loadHistory().toList()
         val popular = PopularProducts.names
         val all = (history + popular).distinct()
@@ -192,7 +188,6 @@ class MainActivity : AppCompatActivity() {
             ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, all)
         )
 
-        // Автозаполнение при выборе
         bsEditItem.setOnItemClickListener { _, _, _, _ ->
             val name = bsEditItem.text.toString().trim()
             if (bsEditPrice.text.isNullOrEmpty()) {
@@ -204,9 +199,7 @@ class MainActivity : AppCompatActivity() {
             }
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
-            (userCat ?: popularCat)?.let { cat ->
-                selectChipIn(bsChips, cat)
-            }
+            (userCat ?: popularCat)?.let { cat -> selectChipIn(bsChips, cat) }
         }
 
         bsBtnAdd.setOnClickListener {
@@ -364,14 +357,10 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- ЧИПЫ ----------
+    // ---------- КАТЕГОРИИ / ЧИПЫ В ШИТЕ ----------
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
         return (base + repo.loadCustomCategories()).distinct()
-    }
-
-    private fun setupMainChips() {
-        setupChipsInto(chipGroup)
     }
 
     private fun setupChipsInto(group: ChipGroup) {
@@ -457,7 +446,7 @@ class MainActivity : AppCompatActivity() {
                 val name = input.text.toString().trim()
                 if (name.isNotEmpty()) {
                     repo.addCustomCategory(name)
-                    setupMainChips()
+                    setupTabs()
                     onAdded(name)
                 }
             }
@@ -467,10 +456,10 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- ФИЛЬТР ----------
     private fun applyFilter() {
-        val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
+        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
 
-        chipGroup.visibility = if (showTags) View.VISIBLE else View.GONE
-        if (!showTags) currentCategory = "Все"
+        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
+        if (!showTabs) currentCategory = "Все"
 
         displayedItems.clear()
         val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
