@@ -11,9 +11,14 @@ import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 
 internal fun MainActivity.allCategoryNames(): List<String> {
-    val base = resources.getStringArray(R.array.categories).toList()
-    val custom = repo.loadCustomCategories()
-    return (base + custom).distinct()
+    return try {
+        val base = resources.getStringArray(R.array.categories).toList()
+        val custom = repo.loadCustomCategories()
+        val result = (base + custom).distinct()
+        if (result.isEmpty()) listOf("Разное") else result
+    } catch (e: Exception) {
+        listOf("Разное")
+    }
 }
 
 internal fun MainActivity.setupSettingsScreen() {
