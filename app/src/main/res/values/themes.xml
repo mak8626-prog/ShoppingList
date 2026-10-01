@@ -13,5 +13,14 @@
         <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/surface</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="chipStyle">@style/SmallChip</item>
+    </style>
+
+    <style name="SmallChip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipMinTouchTargetSize">0dp</item>
+        <item name="chipMinHeight">24dp</item>
+        <item name="chipStartPadding">6dp</item>
+        <item name="chipEndPadding">6dp</item>
+        <item name="android:textSize">11sp</item>
     </style>
 </resources>
