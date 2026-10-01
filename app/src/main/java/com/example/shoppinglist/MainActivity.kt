@@ -173,7 +173,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ---------- ФОРМА ДОБАВЛЕНИЯ ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -188,7 +187,6 @@ class MainActivity : AppCompatActivity() {
 
         setupChipsInto(bsChips)
 
-        // --- Автозаполнение: только "начинается с", максимум 8 подсказок ---
         val history = repo.loadHistory().toList()
         val popular = PopularProducts.names
         val all = (history + popular).distinct()
@@ -199,7 +197,7 @@ class MainActivity : AppCompatActivity() {
         val autoAdapter = object : ArrayAdapter<String>(
             this,
             android.R.layout.simple_dropdown_item_1line,
-            ArrayList()
+            ArrayList<String>()
         ) {
             override fun getFilter(): Filter {
                 return object : Filter() {
@@ -231,7 +229,6 @@ class MainActivity : AppCompatActivity() {
         }
         bsEditItem.setAdapter(autoAdapter)
 
-        // --- Кнопка "+ Цена" ---
         bsBtnTogglePrice.setOnClickListener {
             if (bsEditPrice.visibility == View.GONE) {
                 bsEditPrice.visibility = View.VISIBLE
@@ -244,11 +241,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // --- Автоподстановка цены и тега при выборе из подсказок ---
         bsEditItem.setOnItemClickListener { _, _, _, _ ->
             val name = bsEditItem.text.toString().trim()
 
-            // Цена — если есть сохранённая, показываем поле и заполняем
             if (bsEditPrice.text.isNullOrEmpty()) {
                 repo.getLastPrice(name)?.let { last ->
                     val txt = if (last % 1.0 == 0.0) last.toInt().toString()
@@ -261,7 +256,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Тег
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
             val autoCat = userCat ?: popularCat
@@ -270,7 +264,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // --- Кнопка "Добавить" ---
         bsBtnAdd.setOnClickListener {
             if (!bsBtnAdd.isEnabled) return@setOnClickListener
             bsBtnAdd.isEnabled = false
@@ -316,7 +309,6 @@ class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
-    // ---------- РЕЦЕПТЫ ----------
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
         dish.ingredients.forEach { pair ->
@@ -338,7 +330,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- НАСТРОЙКИ ----------
     private fun setupSettingsScreen() {
         val swDark = findViewById<MaterialSwitch>(R.id.swDarkTheme)
         val swTags = findViewById<MaterialSwitch>(R.id.swShowTags)
@@ -497,4 +488,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectedChipIn(group: ChipGroup): String {
-        val id = gr
+        val id = group.checkedChipId
+        if (id == View.NO_ID) return "Разное"
+        val chip = group.findViewById<Chip>(id)
+        return chip?.text?.toString() ?: "Разное"
+    }
+
+    private fun categoryColor(cat: String): Int {
+        return when (cat) {
+            "Овощи и фрукты" -> 0xFF66BB6A.toInt()
+            "Молочные продукты" -> 0xFF42A5F5.toInt()
+            "Мясо и рыба" -> 0xFFEF5350.toInt()
+            "Хлеб и выпечка"
