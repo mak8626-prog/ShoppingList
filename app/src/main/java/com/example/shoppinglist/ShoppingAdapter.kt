@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.color.MaterialColors
 
 class ShoppingAdapter(
     private val items: MutableList<ShoppingItem>,
@@ -22,6 +20,7 @@ class ShoppingAdapter(
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {
         val card: MaterialCardView = view.findViewById(R.id.cardItem)
+        val stripe: View = view.findViewById(R.id.colorStripe)
         val check: CheckBox = view.findViewById(R.id.checkBox)
         val text: TextView = view.findViewById(R.id.textName)
         val details: TextView = view.findViewById(R.id.textDetails)
@@ -47,18 +46,9 @@ class ShoppingAdapter(
 
         holder.details.text = "${item.category} • $priceStr"
 
-        val surface = MaterialColors.getColor(
-            holder.card,
-            com.google.android.material.R.attr.colorSurface
-        )
-        val accent = categoryColor(item.category)
-        val blended = ColorUtils.blendARGB(surface, accent, 0.45f)
-        holder.card.setCardBackgroundColor(blended)
-        holder.card.strokeColor = accent
-        holder.card.strokeWidth = (2 * holder.card.resources.displayMetrics.density).toInt()
+        // Только тонкая полоска слева — категория. Фон нейтральный.
+        holder.stripe.setBackgroundColor(categoryColor(item.category))
 
-        // СНАЧАЛА снимаем listener, потом ставим состояние — иначе при переиспользовании
-        // ViewHolder старое значение вызовет onCheckedChanged и краш
         holder.check.setOnCheckedChangeListener(null)
         holder.check.isChecked = item.done
         strike(holder.text, item.done)
@@ -68,7 +58,6 @@ class ShoppingAdapter(
             item.done = isChecked
             strike(holder.text, isChecked)
             strike(holder.details, isChecked)
-            // Откладываем обновление — нельзя перестраивать список внутри клика
             holder.itemView.post { onChange() }
         }
 
