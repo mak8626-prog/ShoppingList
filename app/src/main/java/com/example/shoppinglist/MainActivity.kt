@@ -1,8 +1,10 @@
 package com.example.shoppinglist
 
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
@@ -194,13 +196,16 @@ class MainActivity : AppCompatActivity() {
                     bsEditPrice.setText(txt)
                 }
             }
+            // Автовыбор тега только если товар из истории / популярных
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
-            (userCat ?: popularCat)?.let { cat -> selectChipIn(bsChips, cat) }
+            val autoCat = userCat ?: popularCat
+            if (autoCat != null) {
+                selectChipIn(bsChips, autoCat)
+            }
         }
 
         bsBtnAdd.setOnClickListener {
-            // Защита от двойного тапа
             if (!bsBtnAdd.isEnabled) return@setOnClickListener
             bsBtnAdd.isEnabled = false
 
@@ -215,11 +220,9 @@ class MainActivity : AppCompatActivity() {
             val price = bsEditPrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
             val quantity = bsEditQty.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
 
-            // Складываем с существующим товаром
             val existing = allItems.find { it.name.equals(name, ignoreCase = true) }
             if (existing != null) {
                 existing.quantity += quantity
-                // Если у старого не было цены, а у нового есть — обновляем
                 if (existing.price <= 0 && price > 0) existing.price = price
                 Toast.makeText(
                     this,
@@ -236,6 +239,13 @@ class MainActivity : AppCompatActivity() {
             repo.save(allItems)
             applyFilter()
             sheet.dismiss()
+        }
+
+        // Автофокус и клавиатура при открытии
+        sheet.setOnShowListener {
+            bsEditItem.requestFocus()
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(bsEditItem, InputMethodManager.SHOW_IMPLICIT)
         }
 
         sheet.show()
@@ -303,6 +313,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
     private fun removeWithUndo(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val removed = displayedItems.removeAt(pos)
@@ -326,6 +337,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // ---------- РЕДАКТИРОВАНИЕ ----------
     private fun showEditDialog(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val item = displayedItems[pos]
@@ -409,9 +421,7 @@ class MainActivity : AppCompatActivity() {
         }
         group.addView(plusChip)
 
-        if (group.childCount > 0) {
-            (group.getChildAt(0) as? Chip)?.isChecked = true
-        }
+        // Больше НЕ выбираем чип автоматически — по умолчанию ничего не выбрано
     }
 
     private fun selectChipIn(group: ChipGroup, cat: String) {
@@ -494,7 +504,4 @@ class MainActivity : AppCompatActivity() {
     private fun updateTotal() {
         val total = allItems.filter { !it.done }.sumOf { it.total }
         val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                        else String.format("%.2f", total)
-        textTotal.text = "Итого: $formatted ₽"
-    }
-}
+        
