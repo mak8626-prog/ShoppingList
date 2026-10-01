@@ -239,7 +239,6 @@ class MainActivity : AppCompatActivity() {
                 chipMinHeight = 20f * resources.displayMetrics.density
                 chipStartPadding = 4f
                 chipEndPadding = 4f
-                ensureMinTouchTargetSize = false
             }
             chipGroup.addView(chip)
         }
@@ -251,7 +250,6 @@ class MainActivity : AppCompatActivity() {
             chipMinHeight = 20f * resources.displayMetrics.density
             chipStartPadding = 4f
             chipEndPadding = 4f
-            ensureMinTouchTargetSize = false
             setOnClickListener { showAddCategoryDialog() }
         }
         chipGroup.addView(plusChip)
