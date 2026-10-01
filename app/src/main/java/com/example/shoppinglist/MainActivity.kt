@@ -3,6 +3,7 @@ package com.example.shoppinglist
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private val allItems = mutableListOf<ShoppingItem>()
     private val displayedItems = mutableListOf<ShoppingItem>()
     private var currentCategory: String = "Все"
+    private var currentScreen: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                viewHolder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 val pos = viewHolder.bindingAdapterPosition
                 if (pos != RecyclerView.NO_POSITION) removeWithUndo(pos)
             }
@@ -95,6 +98,7 @@ class MainActivity : AppCompatActivity() {
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recycler)
 
         btnClearDone.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             val removed = allItems.filter { it.done }
             if (removed.isEmpty()) {
                 Toast.makeText(this, "Нет купленных", Toast.LENGTH_SHORT).show()
@@ -121,17 +125,42 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        fabAdd.setOnClickListener { showAddSheet() }
+        fabAdd.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            showAddSheet()
+        }
+
         showScreen(0)
         applyFilter()
     }
 
     private fun showScreen(index: Int) {
-        screenList.visibility = if (index == 0) View.VISIBLE else View.GONE
-        screenRecipes.visibility = if (index == 1) View.VISIBLE else View.GONE
-        screenSettings.visibility = if (index == 2) View.VISIBLE else View.GONE
-        fabAdd.visibility = if (index == 0) View.VISIBLE else View.GONE
-        btnClearDone.visibility = if (index == 0) View.VISIBLE else View.GONE
+        if (index == currentScreen) return
+        currentScreen = index
+
+        val screens = listOf(screenList, screenRecipes, screenSettings)
+        screens.forEachIndexed { i, s ->
+            if (i == index) {
+                s.visibility = View.VISIBLE
+                s.alpha = 0f
+                s.animate().alpha(1f).setDuration(220).start()
+            } else {
+                s.animate().alpha(0f).setDuration(120).withEndAction {
+                    s.visibility = View.GONE
+                    s.alpha = 1f
+                }.start()
+            }
+        }
+
+        // FAB — плавно появляется / исчезает
+        val showFab = index == 0
+        fabAdd.animate()
+            .scaleX(if (showFab) 1f else 0f)
+            .scaleY(if (showFab) 1f else 0f)
+            .alpha(if (showFab) 1f else 0f)
+            .setDuration(220)
+            .start()
+        btnClearDone.visibility = if (showFab) View.VISIBLE else View.GONE
     }
 
     private fun setupTabs() {
@@ -140,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.view?.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                 currentCategory = tab?.text?.toString() ?: "Все"
                 applyFilter()
             }
@@ -168,12 +198,18 @@ class MainActivity : AppCompatActivity() {
         bsEditItem.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, all))
 
         bsBtnTogglePrice.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             if (bsEditPrice.visibility == View.GONE) {
                 bsEditPrice.visibility = View.VISIBLE
+                bsEditPrice.alpha = 0f
+                bsEditPrice.animate().alpha(1f).setDuration(180).start()
                 bsEditPrice.requestFocus()
                 bsBtnTogglePrice.text = "- Цена"
             } else {
-                bsEditPrice.visibility = View.GONE
+                bsEditPrice.animate().alpha(0f).setDuration(180).withEndAction {
+                    bsEditPrice.visibility = View.GONE
+                    bsEditPrice.alpha = 1f
+                }.start()
                 bsEditPrice.text.clear()
                 bsBtnTogglePrice.text = "+ Цена"
             }
@@ -189,6 +225,8 @@ class MainActivity : AppCompatActivity() {
                     bsEditPrice.setText(txt)
                     if (bsEditPrice.visibility == View.GONE) {
                         bsEditPrice.visibility = View.VISIBLE
+                        bsEditPrice.alpha = 0f
+                        bsEditPrice.animate().alpha(1f).setDuration(180).start()
                         bsBtnTogglePrice.text = "- Цена"
                     }
                 }
@@ -197,8 +235,9 @@ class MainActivity : AppCompatActivity() {
             if (autoCat != null) selectChipIn(bsChips, autoCat)
         }
 
-        bsBtnAdd.setOnClickListener {
+        bsBtnAdd.setOnClickListener { btn ->
             if (!bsBtnAdd.isEnabled) return@setOnClickListener
+            btn.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             bsBtnAdd.isEnabled = false
             val name = bsEditItem.text.toString().trim()
             if (name.isEmpty()) {
@@ -265,12 +304,12 @@ class MainActivity : AppCompatActivity() {
         swShowTotal.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
         swClearFields.isChecked = repo.getBool(ShoppingRepository.SET_CLEAR_FIELDS, true)
 
-        swDark.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_DARK_THEME, v); recreate() }
-        swTags.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_SHOW_TAGS, v); applyFilter() }
-        swCompact.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_COMPACT, v); recreate() }
-        swShowDone.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_SHOW_DONE, v); applyFilter() }
-        swShowTotal.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, v); applyFilter() }
-        swClearFields.setOnCheckedChangeListener { _, v -> repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, v) }
+        swDark.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_DARK_THEME, x); recreate() }
+        swTags.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_TAGS, x); applyFilter() }
+        swCompact.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_COMPACT, x); recreate() }
+        swShowDone.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_DONE, x); applyFilter() }
+        swShowTotal.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, x); applyFilter() }
+        swClearFields.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, x) }
     }
 
     private fun removeWithUndo(pos: Int) {
@@ -349,6 +388,9 @@ class MainActivity : AppCompatActivity() {
                 chipMinHeight = 20f * resources.displayMetrics.density
                 chipStartPadding = 4f
                 chipEndPadding = 4f
+                setOnCheckedChangeListener { _, _ ->
+                    performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                }
             }
             val bg = ColorUtils.setAlphaComponent(categoryColor(cat), 80)
             chip.chipBackgroundColor = ColorStateList.valueOf(bg)
@@ -359,6 +401,7 @@ class MainActivity : AppCompatActivity() {
             textSize = 11f
             chipMinHeight = 20f * resources.displayMetrics.density
             setOnClickListener {
+                it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                 val input = EditText(this@MainActivity).apply { hint = "Название категории" }
                 AlertDialog.Builder(this@MainActivity)
                     .setTitle("Новая категория")
@@ -395,37 +438,4 @@ class MainActivity : AppCompatActivity() {
     private fun categoryColor(cat: String): Int = when (cat) {
         "Овощи и фрукты" -> 0xFF66BB6A.toInt()
         "Молочные продукты" -> 0xFF42A5F5.toInt()
-        "Мясо и рыба" -> 0xFFEF5350.toInt()
-        "Хлеб и выпечка" -> 0xFFFFA726.toInt()
-        "Напитки" -> 0xFF29B6F6.toInt()
-        "Бакалея" -> 0xFFAB47BC.toInt()
-        "Заморозка" -> 0xFF26C6DA.toInt()
-        "Сладости" -> 0xFFEC407A.toInt()
-        "Бытовая химия" -> 0xFF9CCC65.toInt()
-        else -> 0xFF9E9E9E.toInt()
-    }
-
-    private fun applyFilter() {
-        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
-        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
-        if (!showTabs) currentCategory = "Все"
-        displayedItems.clear()
-        val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
-        val byCategory = if (currentCategory == "Все") allItems
-                         else allItems.filter { it.category == currentCategory }
-        displayedItems.addAll(if (showDone) byCategory else byCategory.filter { !it.done })
-        adapter.notifyDataSetChanged()
-        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
-        recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
-        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
-        updateTotal()
-    }
-
-    private fun updateTotal() {
-        val total = allItems.filter { !it.done }.sumOf { it.total }
-        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                        else String.format("%.2f", total)
-        textTotal.text = "Итого: $formatted ₽"
-    }
-}
+        "Мясо и рыба" -> 0xFF
