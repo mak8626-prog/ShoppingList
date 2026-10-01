@@ -1,6 +1,7 @@
 package com.example.shoppinglist
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -66,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         val btnAdd = findViewById<Button>(R.id.btnAdd)
         val btnClear = findViewById<Button>(R.id.btnClearDone)
         val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
+        val btnShare = findViewById<ImageButton>(R.id.btnShare)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         tabLayout = findViewById(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
@@ -159,8 +161,56 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSettings.setOnClickListener { showSettings() }
+        btnShare.setOnClickListener { shareList() }
 
         applyFilter()
+    }
+
+    // ---------- ПОДЕЛИТЬСЯ ----------
+    private fun shareList() {
+        if (allItems.isEmpty()) {
+            Toast.makeText(this, "Список пуст", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val sb = StringBuilder()
+        sb.append("🛒 Список покупок\n\n")
+
+        // Группировка по категориям
+        val byCat = allItems.groupBy { it.category }
+        byCat.forEach { (cat, items) ->
+            if (cat != "Разное" || byCat.size > 1) {
+                sb.append("▪ $cat\n")
+            }
+            items.forEach { it ->
+                val mark = if (it.done) "✓" else "○"
+                sb.append("  $mark ${it.name}")
+                if (it.price > 0) {
+                    val priceTxt = if (it.price % 1.0 == 0.0) it.price.toInt().toString()
+                                   else String.format("%.2f", it.price).trimEnd('0').trimEnd('.')
+                    if (it.quantity > 1) {
+                        sb.append(" — $priceTxt ₽ × ${it.quantity}")
+                    } else {
+                        sb.append(" — $priceTxt ₽")
+                    }
+                }
+                sb.append("\n")
+            }
+            sb.append("\n")
+        }
+
+        val total = allItems.filter { !it.done }.sumOf { it.total }
+        if (total > 0) {
+            val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
+                            else String.format("%.2f", total)
+            sb.append("💰 Итого: $formatted ₽")
+        }
+
+        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, sb.toString().trim())
+        }
+        startActivity(Intent.createChooser(sendIntent, "Поделиться списком"))
     }
 
     // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
