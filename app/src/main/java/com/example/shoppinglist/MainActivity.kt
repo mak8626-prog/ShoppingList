@@ -164,6 +164,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    // ---------- ФОРМА ДОБАВЛЕНИЯ ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -199,9 +200,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         bsBtnAdd.setOnClickListener {
+            // Защита от двойного тапа
+            if (!bsBtnAdd.isEnabled) return@setOnClickListener
+            bsBtnAdd.isEnabled = false
+
             val name = bsEditItem.text.toString().trim()
             if (name.isEmpty()) {
                 Toast.makeText(this, "Введите название", Toast.LENGTH_SHORT).show()
+                bsBtnAdd.isEnabled = true
                 return@setOnClickListener
             }
 
@@ -209,7 +215,21 @@ class MainActivity : AppCompatActivity() {
             val price = bsEditPrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
             val quantity = bsEditQty.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
 
-            allItems.add(ShoppingItem(name, category, price, quantity))
+            // Складываем с существующим товаром
+            val existing = allItems.find { it.name.equals(name, ignoreCase = true) }
+            if (existing != null) {
+                existing.quantity += quantity
+                // Если у старого не было цены, а у нового есть — обновляем
+                if (existing.price <= 0 && price > 0) existing.price = price
+                Toast.makeText(
+                    this,
+                    "«$name» уже в списке: теперь ${existing.quantity} шт",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                allItems.add(ShoppingItem(name, category, price, quantity))
+            }
+
             repo.addToHistory(name)
             repo.saveLastPrice(name, price)
             repo.saveCategoryForProduct(name, category)
@@ -221,6 +241,7 @@ class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
+    // ---------- РЕЦЕПТЫ ----------
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
         dish.ingredients.forEach { pair ->
