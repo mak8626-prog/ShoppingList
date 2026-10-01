@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_list"
-        android:icon="@android:drawable/ic_menu_agenda"
+        android:icon="@drawable/ic_list"
         android:title="Список" />
     <item
         android:id="@+id/nav_recipes"
