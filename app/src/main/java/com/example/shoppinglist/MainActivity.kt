@@ -166,7 +166,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ---------- ФОРМА ДОБАВЛЕНИЯ ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -196,7 +195,6 @@ class MainActivity : AppCompatActivity() {
                     bsEditPrice.setText(txt)
                 }
             }
-            // Автовыбор тега только если товар из истории / популярных
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
             val autoCat = userCat ?: popularCat
@@ -241,7 +239,6 @@ class MainActivity : AppCompatActivity() {
             sheet.dismiss()
         }
 
-        // Автофокус и клавиатура при открытии
         sheet.setOnShowListener {
             bsEditItem.requestFocus()
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -251,7 +248,6 @@ class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
-    // ---------- РЕЦЕПТЫ ----------
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
         dish.ingredients.forEach { pair ->
@@ -313,7 +309,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
     private fun removeWithUndo(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val removed = displayedItems.removeAt(pos)
@@ -337,7 +332,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- РЕДАКТИРОВАНИЕ ----------
     private fun showEditDialog(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val item = displayedItems[pos]
@@ -420,8 +414,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         group.addView(plusChip)
-
-        // Больше НЕ выбираем чип автоматически — по умолчанию ничего не выбрано
     }
 
     private fun selectChipIn(group: ChipGroup, cat: String) {
@@ -504,4 +496,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateTotal() {
         val total = allItems.filter { !it.done }.sumOf { it.total }
         val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-        
+                        else String.format("%.2f", total)
+        textTotal.text = "Итого: $formatted ₽"
+    }
+}        
