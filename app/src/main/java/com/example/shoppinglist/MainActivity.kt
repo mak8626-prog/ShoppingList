@@ -230,27 +230,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupChips() {
-        chipGroup.removeAllViews()
-        val cats = allCategoryNames()
-        cats.forEach { cat ->
-            val chip = Chip(this).apply {
-                text = cat
-                isCheckable = true
-                isClickable = true
-            }
-            chipGroup.addView(chip)
+    chipGroup.removeAllViews()
+    val cats = allCategoryNames()
+    cats.forEach { cat ->
+        val chip = Chip(this).apply {
+            text = cat
+            isCheckable = true
+            isClickable = true
+            textSize = 12f
+            chipMinHeight = 28f * resources.displayMetrics.density
+            chipStartPadding = 6f
+            chipEndPadding = 6f
+            setPadding(0, 0, 0, 0)
         }
+        chipGroup.addView(chip)
+    }
 
-        val plusChip = Chip(this).apply {
-            text = "+ тег"
-            isCheckable = false
-            setOnClickListener { showAddCategoryDialog() }
-        }
-        chipGroup.addView(plusChip)
+    val plusChip = Chip(this).apply {
+        text = "+ тег"
+        isCheckable = false
+        textSize = 12f
+        chipMinHeight = 28f * resources.displayMetrics.density
+        chipStartPadding = 6f
+        chipEndPadding = 6f
+        setPadding(0, 0, 0, 0)
+        setOnClickListener { showAddCategoryDialog() }
+    }
+    chipGroup.addView(plusChip)
 
-        if (chipGroup.childCount > 0) {
-            (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
-        }
+    if (chipGroup.childCount > 0) {
+        (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
+    }
     }
 
     private fun selectedCategory(): String {
