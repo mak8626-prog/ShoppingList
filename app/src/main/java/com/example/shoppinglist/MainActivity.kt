@@ -192,9 +192,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     internal fun updateTotal() {
-        val total = allItems.filter { !it.done }.sumOf { it.total }
-        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                        else String.format("%.2f", total)
-        textTotal.text = "Итого: $formatted ₽"
+    val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
+    if (!showTotal || allItems.isEmpty()) {
+        textTotal.visibility = View.GONE
+        return
     }
-}
+    textTotal.visibility = View.VISIBLE
+
+    val total = allItems.filter { !it.done }.sumOf { it.total }
+    val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
+                    else String.format("%.2f", total)
+
+    val totalCount = allItems.size
+    val doneCount = allItems.count { it.done }
+
+    textTotal.text = if (doneCount > 0) {
+        "Итого: $formatted ₽ · $doneCount из $totalCount"
+    } else {
+        "Итого: $formatted ₽"
+    }
+    }
