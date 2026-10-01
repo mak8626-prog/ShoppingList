@@ -23,7 +23,7 @@
         android:paddingEnd="12dp"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="80dp" />
+        android:paddingBottom="8dp" />
 
     <LinearLayout
         android:id="@+id/emptyState"
@@ -51,46 +51,17 @@
             android:gravity="center" />
     </LinearLayout>
 
-    <LinearLayout
+    <!-- Итого — просто текст, без рамки -->
+    <TextView
+        android:id="@+id/textTotal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="10dp"
-        android:background="?attr/colorSurface"
-        android:elevation="6dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardTotal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            app:cardCornerRadius="14dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/colorPrimaryContainer">
-
-            <TextView
-                android:id="@+id/textTotal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="12dp"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:gravity="center"
-                android:text="Итого: 0 ₽" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnClearDone"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Очистить"
-            android:textSize="13sp"
-            app:cornerRadius="14dp" />
-    </LinearLayout>
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="12dp"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        android:text="Итого: 0 ₽" />
 </LinearLayout>
