@@ -15,6 +15,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var repo: ShoppingRepository
     private lateinit var adapter: ShoppingAdapter
     private lateinit var textTotal: TextView
+    private lateinit var cardTotal: MaterialCardView
     private lateinit var chipGroup: ChipGroup
     private lateinit var tabLayout: TabLayout
     private lateinit var emptyState: LinearLayout
@@ -65,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         tabLayout = findViewById(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
         textTotal = findViewById(R.id.textTotal)
+        cardTotal = findViewById(R.id.cardTotal)
         emptyState = findViewById(R.id.emptyState)
 
         setupChips()
@@ -88,7 +92,8 @@ class MainActivity : AppCompatActivity() {
                 repo.save(allItems)
                 applyFilter()
             },
-            onDelete = { pos -> syncAfterDelete(pos) }
+            onDelete = { pos -> syncAfterDelete(pos) },
+            onEdit = { pos -> showEditDialog(pos) }
         )
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
@@ -158,6 +163,51 @@ class MainActivity : AppCompatActivity() {
         btnSettings.setOnClickListener { showSettings() }
 
         applyFilter()
+    }
+
+    // ---------- РЕДАКТИРОВАНИЕ ----------
+    private fun showEditDialog(pos: Int) {
+        if (pos < 0 || pos >= displayedItems.size) return
+        val item = displayedItems[pos]
+
+        val view = layoutInflater.inflate(R.layout.dialog_edit, null)
+        val eName = view.findViewById<EditText>(R.id.editName)
+        val ePrice = view.findViewById<EditText>(R.id.editPrice)
+        val eQty = view.findViewById<EditText>(R.id.editQty)
+        val spinnerCat = view.findViewById<Spinner>(R.id.spinnerCat)
+
+        eName.setText(item.name)
+        if (item.price > 0) {
+            val txt = if (item.price % 1.0 == 0.0) item.price.toInt().toString()
+                      else String.format("%.2f", item.price).trimEnd('0').trimEnd('.')
+            ePrice.setText(txt)
+        }
+        eQty.setText(item.quantity.toString())
+
+        val cats = allCategoryNames()
+        val spAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, cats)
+        spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCat.adapter = spAdapter
+        val catIndex = cats.indexOf(item.category)
+        spinnerCat.setSelection(if (catIndex >= 0) catIndex else 0)
+
+        AlertDialog.Builder(this)
+            .setTitle("Редактировать товар")
+            .setView(view)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val newName = eName.text.toString().trim()
+                if (newName.isEmpty()) return@setPositiveButton
+                item.name = newName
+                item.price = ePrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
+                item.quantity = eQty.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
+                item.category = spinnerCat.selectedItem.toString()
+                repo.save(allItems)
+                repo.saveLastPrice(newName, item.price)
+                repo.saveCategoryForProduct(newName, item.category)
+                applyFilter()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun setupTabs() {
@@ -361,7 +411,7 @@ class MainActivity : AppCompatActivity() {
         emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
 
         val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
+        cardTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
 
         updateTotal()
     }
