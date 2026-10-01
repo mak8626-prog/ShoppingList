@@ -7,7 +7,10 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
 
 class ShoppingAdapter(
     private val items: MutableList<ShoppingItem>,
@@ -18,6 +21,7 @@ class ShoppingAdapter(
 ) : RecyclerView.Adapter<ShoppingAdapter.VH>() {
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {
+        val card: MaterialCardView = view.findViewById(R.id.cardItem)
         val check: CheckBox = view.findViewById(R.id.checkBox)
         val text: TextView = view.findViewById(R.id.textName)
         val details: TextView = view.findViewById(R.id.textDetails)
@@ -29,7 +33,7 @@ class ShoppingAdapter(
             .inflate(R.layout.item_shopping, parent, false)
         if (compact) {
             val d = parent.context.resources.displayMetrics.density
-            v.setPadding(0, (4 * d).toInt(), 0, (4 * d).toInt())
+            v.setPadding(0, (3 * d).toInt(), 0, (3 * d).toInt())
         }
         return VH(v)
     }
@@ -46,6 +50,15 @@ class ShoppingAdapter(
             "×${item.quantity}"
 
         holder.details.text = "${item.category} • $priceStr"
+
+        // Цвет карточки по категории: смешиваем с фоном темы
+        val surface = MaterialColors.getColor(
+            holder.card,
+            com.google.android.material.R.attr.colorSurface
+        )
+        val accent = categoryColor(item.category)
+        val blended = ColorUtils.blendARGB(surface, accent, 0.22f)
+        holder.card.setCardBackgroundColor(blended)
 
         holder.check.isChecked = item.done
         strike(holder.text, item.done)
@@ -67,10 +80,24 @@ class ShoppingAdapter(
             }
         }
 
-        // Тап по элементу — редактирование
         holder.itemView.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onEdit(pos)
+        }
+    }
+
+    private fun categoryColor(cat: String): Int {
+        return when (cat) {
+            "Овощи и фрукты" -> 0xFF66BB6A.toInt()   // зелёный
+            "Молочные продукты" -> 0xFF42A5F5.toInt() // синий
+            "Мясо и рыба" -> 0xFFEF5350.toInt()       // красный
+            "Хлеб и выпечка" -> 0xFFFFA726.toInt()    // оранжевый
+            "Напитки" -> 0xFF29B6F6.toInt()           // голубой
+            "Бакалея" -> 0xFFAB47BC.toInt()           // фиолетовый
+            "Заморозка" -> 0xFF26C6DA.toInt()         // циан
+            "Сладости" -> 0xFFEC407A.toInt()          // розовый
+            "Бытовая химия" -> 0xFF9CCC65.toInt()     // лайм
+            else -> 0xFF9E9E9E.toInt()                // серый
         }
     }
 
