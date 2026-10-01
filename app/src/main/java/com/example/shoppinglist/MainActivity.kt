@@ -170,7 +170,6 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
-    // ---------- ШАБЛОНЫ БЛЮД ----------
     private fun showRecipesDialog() {
         val view = layoutInflater.inflate(R.layout.dialog_recipes, null)
         val recycler = view.findViewById<RecyclerView>(R.id.recipesRecycler)
@@ -192,8 +191,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
-        dish.ingredients.forEach { (name, category) ->
-            // Не добавляем, если уже есть в списке с тем же названием
+        dish.ingredients.forEach { pair ->
+            val name = pair.first
+            val category = pair.second
             val exists = allItems.any { it.name.equals(name, ignoreCase = true) }
             if (!exists) {
                 val price = repo.getLastPrice(name) ?: 0.0
@@ -205,42 +205,12 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
 
         if (added > 0) {
-            Toast.makeText(this, "${dish.emoji} ${dish.name}: добавлено $added", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "${dish.emoji} ${dish.name}: +$added", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Все ингредиенты уже в списке", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ---------- КЛАСС АДАПТЕРА РЕЦЕПТОВ (внутренний) ----------
-    private class RecipesAdapter(
-        private val dishes: List<DishTemplates.Dish>,
-        private val onClick: (DishTemplates.Dish) -> Unit
-    ) : RecyclerView.Adapter<RecipesAdapter.VH>() {
-
-        class VH(view: View) : RecyclerView.ViewHolder(view) {
-            val emoji: TextView = view.findViewById(R.id.recipeEmoji)
-            val name: TextView = view.findViewById(R.id.recipeName)
-            val details: TextView = view.findViewById(R.id.recipeDetails)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val v = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_recipe, parent, false)
-            return VH(v)
-        }
-
-        override fun getItemCount() = dishes.size
-
-        override fun onBindViewHolder(holder: VH, position: Int) {
-            val dish = dishes[position]
-            holder.emoji.text = dish.emoji
-            holder.name.text = dish.name
-            holder.details.text = "${dish.ingredients.size} ингредиентов"
-            holder.itemView.setOnClickListener { onClick(dish) }
-        }
-    }
-
-    // ---------- ПОДЕЛИТЬСЯ ----------
     private fun shareList() {
         if (allItems.isEmpty()) {
             Toast.makeText(this, "Список пуст", Toast.LENGTH_SHORT).show()
@@ -251,7 +221,9 @@ class MainActivity : AppCompatActivity() {
         sb.append("🛒 Список покупок\n\n")
 
         val byCat = allItems.groupBy { it.category }
-        byCat.forEach { (cat, items) ->
+        byCat.forEach { entry ->
+            val cat = entry.key
+            val items = entry.value
             if (cat != "Разное" || byCat.size > 1) {
                 sb.append("▪ $cat\n")
             }
@@ -286,7 +258,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent.createChooser(sendIntent, "Поделиться списком"))
     }
 
-    // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
     private fun removeWithUndo(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val removed = displayedItems.removeAt(pos)
@@ -310,7 +281,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- РЕДАКТИРОВАНИЕ ----------
     private fun showEditDialog(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val item = displayedItems[pos]
@@ -506,4 +476,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
-        val handler = Handler(Looper.getMainLooper
+        val handler = Handler(Looper.getMainLooper())
+        var pending: Runnable? = null
+
+        edit.setOnItemClickListener { _, _, _, _ ->
+            autofill(edit.text.toString().trim(), priceField)
+        }
+
+        edit.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                pending?.let { handler.removeCallbacks(it) }
+                val r = Runnable {
+                    val name = s?.toString()?.trim() ?: return@Runnable
+                    if (name.isEmpty()) return@Runnable
+                    autofill(name, priceField)
+                }
+                pending = r
+                handler.postDelayed(r, 600)
+            }
+        })
+    }
+
+    private fun autofill(name: String, priceField: EditText) {
+        if (priceField.text.isNullOrEmpty()) {
+            repo.getLastPrice(name)?.let { last ->
+                val txt = if (last % 1.0 == 0.0) last.toInt().toString()
+                          else String.format("%.2f", last).trimEnd('0').trimEnd('.')
+                priceField.setText(txt)
+            }
+        }
+
+        if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
+            v
