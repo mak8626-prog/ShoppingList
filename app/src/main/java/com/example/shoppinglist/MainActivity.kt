@@ -52,11 +52,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         repo = ShoppingRepository(this)
-        AppCompatDelegate.setDefaultNightMode(
-            if (repo.getBool(ShoppingRepository.SET_DARK_THEME, false))
-                AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
+        val dark = repo.getBool(ShoppingRepository.SET_DARK_THEME, false)
+        if (dark) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
         setContentView(R.layout.activity_main)
         allItems.addAll(repo.load())
 
@@ -79,7 +80,11 @@ class MainActivity : AppCompatActivity() {
             onChange = {
                 repo.save(allItems)
                 val hideDone = !repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
-                if (hideDone) recycler.post { applyFilter() } else updateTotal()
+                if (hideDone) {
+                    recycler.post { applyFilter() }
+                } else {
+                    updateTotal()
+                }
             },
             onDelete = { pos -> removeWithUndo(pos) },
             onEdit = { pos -> showEditDialog(pos) }
@@ -88,7 +93,9 @@ class MainActivity : AppCompatActivity() {
         recycler.adapter = adapter
 
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 viewHolder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 val pos = viewHolder.bindingAdapterPosition
@@ -97,8 +104,8 @@ class MainActivity : AppCompatActivity() {
         }
         ItemTouchHelper(swipeCallback).attachToRecyclerView(recycler)
 
-        btnClearDone.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+        btnClearDone.setOnClickListener { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             val removed = allItems.filter { it.done }
             if (removed.isEmpty()) {
                 Toast.makeText(this, "Нет купленных", Toast.LENGTH_SHORT).show()
@@ -118,15 +125,24 @@ class MainActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_list -> { showScreen(0); true }
-                R.id.nav_recipes -> { showScreen(1); true }
-                R.id.nav_settings -> { showScreen(2); true }
+                R.id.nav_list -> {
+                    showScreen(0)
+                    true
+                }
+                R.id.nav_recipes -> {
+                    showScreen(1)
+                    true
+                }
+                R.id.nav_settings -> {
+                    showScreen(2)
+                    true
+                }
                 else -> false
             }
         }
 
-        fabAdd.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        fabAdd.setOnClickListener { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             showAddSheet()
         }
 
@@ -135,38 +151,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showScreen(index: Int) {
-        if (index == currentScreen) return
+        if (index == currentScreen && index == 0) {
+            // первый запуск — просто показать
+        }
         currentScreen = index
 
         val screens = listOf(screenList, screenRecipes, screenSettings)
-        screens.forEachIndexed { i, s ->
+        for (i in screens.indices) {
+            val s = screens[i]
             if (i == index) {
                 s.visibility = View.VISIBLE
                 s.alpha = 0f
                 s.animate().alpha(1f).setDuration(220).start()
             } else {
-                s.animate().alpha(0f).setDuration(120).withEndAction {
-                    s.visibility = View.GONE
-                    s.alpha = 1f
-                }.start()
+                s.visibility = View.GONE
             }
         }
 
-        // FAB — плавно появляется / исчезает
         val showFab = index == 0
-        fabAdd.animate()
-            .scaleX(if (showFab) 1f else 0f)
-            .scaleY(if (showFab) 1f else 0f)
-            .alpha(if (showFab) 1f else 0f)
-            .setDuration(220)
-            .start()
-        btnClearDone.visibility = if (showFab) View.VISIBLE else View.GONE
+        if (showFab) {
+            fabAdd.visibility = View.VISIBLE
+            fabAdd.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(220).start()
+            btnClearDone.visibility = View.VISIBLE
+        } else {
+            fabAdd.animate().scaleX(0f).scaleY(0f).alpha(0f).setDuration(180).start()
+            btnClearDone.visibility = View.GONE
+        }
     }
 
     private fun setupTabs() {
         tabLayout.removeAllTabs()
         val cats = listOf("Все") + allCategoryNames()
-        cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
+        for (c in cats) {
+            tabLayout.addTab(tabLayout.newTab().setText(c))
+        }
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.view?.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
@@ -197,8 +215,8 @@ class MainActivity : AppCompatActivity() {
         bsEditItem.dropDownHeight = (200 * resources.displayMetrics.density).toInt()
         bsEditItem.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, all))
 
-        bsBtnTogglePrice.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        bsBtnTogglePrice.setOnClickListener { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             if (bsEditPrice.visibility == View.GONE) {
                 bsEditPrice.visibility = View.VISIBLE
                 bsEditPrice.alpha = 0f
@@ -206,10 +224,7 @@ class MainActivity : AppCompatActivity() {
                 bsEditPrice.requestFocus()
                 bsBtnTogglePrice.text = "- Цена"
             } else {
-                bsEditPrice.animate().alpha(0f).setDuration(180).withEndAction {
-                    bsEditPrice.visibility = View.GONE
-                    bsEditPrice.alpha = 1f
-                }.start()
+                bsEditPrice.visibility = View.GONE
                 bsEditPrice.text.clear()
                 bsBtnTogglePrice.text = "+ Цена"
             }
@@ -225,8 +240,6 @@ class MainActivity : AppCompatActivity() {
                     bsEditPrice.setText(txt)
                     if (bsEditPrice.visibility == View.GONE) {
                         bsEditPrice.visibility = View.VISIBLE
-                        bsEditPrice.alpha = 0f
-                        bsEditPrice.animate().alpha(1f).setDuration(180).start()
                         bsBtnTogglePrice.text = "- Цена"
                     }
                 }
@@ -235,19 +248,22 @@ class MainActivity : AppCompatActivity() {
             if (autoCat != null) selectChipIn(bsChips, autoCat)
         }
 
-        bsBtnAdd.setOnClickListener { btn ->
+        bsBtnAdd.setOnClickListener { v ->
             if (!bsBtnAdd.isEnabled) return@setOnClickListener
-            btn.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             bsBtnAdd.isEnabled = false
+
             val name = bsEditItem.text.toString().trim()
             if (name.isEmpty()) {
                 Toast.makeText(this, "Введите название", Toast.LENGTH_SHORT).show()
                 bsBtnAdd.isEnabled = true
                 return@setOnClickListener
             }
+
             val category = selectedChipIn(bsChips)
             val price = bsEditPrice.text.toString().replace(',', '.').toDoubleOrNull() ?: 0.0
             val quantity = bsEditQty.text.toString().toIntOrNull()?.coerceAtLeast(1) ?: 1
+
             val existing = allItems.find { it.name.equals(name, ignoreCase = true) }
             if (existing != null) {
                 existing.quantity += quantity
@@ -256,6 +272,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 allItems.add(ShoppingItem(name, category, price, quantity))
             }
+
             repo.addToHistory(name)
             if (price > 0) repo.saveLastPrice(name, price)
             repo.saveCategoryForProduct(name, category)
@@ -274,10 +291,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
-        dish.ingredients.forEach { pair ->
+        for (pair in dish.ingredients) {
             val name = pair.first
             val category = pair.second
-            if (allItems.none { it.name.equals(name, ignoreCase = true) }) {
+            val exists = allItems.any { it.name.equals(name, ignoreCase = true) }
+            if (!exists) {
                 val price = repo.getLastPrice(name) ?: 0.0
                 allItems.add(ShoppingItem(name, category, price, 1))
                 added++
@@ -304,12 +322,35 @@ class MainActivity : AppCompatActivity() {
         swShowTotal.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
         swClearFields.isChecked = repo.getBool(ShoppingRepository.SET_CLEAR_FIELDS, true)
 
-        swDark.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_DARK_THEME, x); recreate() }
-        swTags.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_TAGS, x); applyFilter() }
-        swCompact.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_COMPACT, x); recreate() }
-        swShowDone.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_DONE, x); applyFilter() }
-        swShowTotal.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, x); applyFilter() }
-        swClearFields.setOnCheckedChangeListener { v, x -> v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK); repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, x) }
+        swDark.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_DARK_THEME, x)
+            recreate()
+        }
+        swTags.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_SHOW_TAGS, x)
+            applyFilter()
+        }
+        swCompact.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_COMPACT, x)
+            recreate()
+        }
+        swShowDone.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_SHOW_DONE, x)
+            applyFilter()
+        }
+        swShowTotal.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, x)
+            applyFilter()
+        }
+        swClearFields.setOnCheckedChangeListener { v, x ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, x)
+        }
     }
 
     private fun removeWithUndo(pos: Int) {
@@ -320,13 +361,18 @@ class MainActivity : AppCompatActivity() {
         adapter.notifyItemRemoved(pos)
         repo.save(allItems)
         applyFilter()
-        Snackbar.make(findViewById(R.id.coordinator), "$removed.name удалён", Snackbar.LENGTH_LONG)
+        val name = removed.name
+        Snackbar.make(findViewById(R.id.coordinator), "$name удалён", Snackbar.LENGTH_LONG)
             .setAction("Вернуть") {
-                if (globalIndex in 0..allItems.size) allItems.add(globalIndex, removed)
-                else allItems.add(removed)
+                if (globalIndex in 0..allItems.size) {
+                    allItems.add(globalIndex, removed)
+                } else {
+                    allItems.add(removed)
+                }
                 repo.save(allItems)
                 applyFilter()
-            }.show()
+            }
+            .show()
     }
 
     private fun showEditDialog(pos: Int) {
@@ -374,50 +420,51 @@ class MainActivity : AppCompatActivity() {
 
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
-        return (base + repo.loadCustomCategories()).distinct()
+        val custom = repo.loadCustomCategories()
+        return (base + custom).distinct()
     }
 
     private fun setupChipsInto(group: ChipGroup) {
         group.removeAllViews()
-        allCategoryNames().forEach { cat ->
-            val chip = Chip(this).apply {
-                text = cat
-                isCheckable = true
-                isClickable = true
-                textSize = 11f
-                chipMinHeight = 20f * resources.displayMetrics.density
-                chipStartPadding = 4f
-                chipEndPadding = 4f
-                setOnCheckedChangeListener { _, _ ->
-                    performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                }
-            }
+        val cats = allCategoryNames()
+        for (cat in cats) {
+            val chip = Chip(this)
+            chip.text = cat
+            chip.isCheckable = true
+            chip.isClickable = true
+            chip.textSize = 11f
+            chip.chipMinHeight = 20f * resources.displayMetrics.density
+            chip.chipStartPadding = 4f
+            chip.chipEndPadding = 4f
             val bg = ColorUtils.setAlphaComponent(categoryColor(cat), 80)
             chip.chipBackgroundColor = ColorStateList.valueOf(bg)
+            chip.setOnCheckedChangeListener { v, _ ->
+                v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            }
             group.addView(chip)
         }
-        val plusChip = Chip(this).apply {
-            text = "+ тег"
-            textSize = 11f
-            chipMinHeight = 20f * resources.displayMetrics.density
-            setOnClickListener {
-                it.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-                val input = EditText(this@MainActivity).apply { hint = "Название категории" }
-                AlertDialog.Builder(this@MainActivity)
-                    .setTitle("Новая категория")
-                    .setView(input)
-                    .setPositiveButton("Добавить") { _, _ ->
-                        val n = input.text.toString().trim()
-                        if (n.isNotEmpty()) {
-                            repo.addCustomCategory(n)
-                            setupTabs()
-                            setupChipsInto(group)
-                            selectChipIn(group, n)
-                        }
+        val plusChip = Chip(this)
+        plusChip.text = "+ тег"
+        plusChip.textSize = 11f
+        plusChip.chipMinHeight = 20f * resources.displayMetrics.density
+        plusChip.setOnClickListener { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            val input = EditText(this)
+            input.hint = "Название категории"
+            AlertDialog.Builder(this)
+                .setTitle("Новая категория")
+                .setView(input)
+                .setPositiveButton("Добавить") { _, _ ->
+                    val n = input.text.toString().trim()
+                    if (n.isNotEmpty()) {
+                        repo.addCustomCategory(n)
+                        setupTabs()
+                        setupChipsInto(group)
+                        selectChipIn(group, n)
                     }
-                    .setNegativeButton("Отмена", null)
-                    .show()
-            }
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
         }
         group.addView(plusChip)
     }
@@ -425,17 +472,6 @@ class MainActivity : AppCompatActivity() {
     private fun selectChipIn(group: ChipGroup, cat: String) {
         for (i in 0 until group.childCount) {
             val chip = group.getChildAt(i) as? Chip ?: continue
-            if (chip.text.toString() == cat) { chip.isChecked = true; return }
-        }
-    }
-
-    private fun selectedChipIn(group: ChipGroup): String {
-        val id = group.checkedChipId
-        if (id == View.NO_ID) return "Разное"
-        return group.findViewById<Chip>(id)?.text?.toString() ?: "Разное"
-    }
-
-    private fun categoryColor(cat: String): Int = when (cat) {
-        "Овощи и фрукты" -> 0xFF66BB6A.toInt()
-        "Молочные продукты" -> 0xFF42A5F5.toInt()
-        "Мясо и рыба" -> 0xFF
+            if (chip.text.toString() == cat) {
+                chip.isChecked = true
+   
