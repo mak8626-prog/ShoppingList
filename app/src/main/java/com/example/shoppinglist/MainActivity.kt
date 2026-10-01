@@ -236,10 +236,10 @@ class MainActivity : AppCompatActivity() {
                 isCheckable = true
                 isClickable = true
                 textSize = 11f
-                chipMinHeight = 24f * resources.displayMetrics.density
+                chipMinHeight = 20f * resources.displayMetrics.density
                 chipStartPadding = 4f
                 chipEndPadding = 4f
-                setPadding(0, 0, 0, 0)
+                ensureMinTouchTargetSize = false
             }
             chipGroup.addView(chip)
         }
@@ -248,10 +248,10 @@ class MainActivity : AppCompatActivity() {
             text = "+ тег"
             isCheckable = false
             textSize = 11f
-            chipMinHeight = 24f * resources.displayMetrics.density
+            chipMinHeight = 20f * resources.displayMetrics.density
             chipStartPadding = 4f
             chipEndPadding = 4f
-            setPadding(0, 0, 0, 0)
+            ensureMinTouchTargetSize = false
             setOnClickListener { showAddCategoryDialog() }
         }
         chipGroup.addView(plusChip)
