@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Filter
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.Spinner
@@ -29,6 +30,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import java.util.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -171,6 +173,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    // ---------- ФОРМА ДОБАВЛЕНИЯ ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -180,26 +183,85 @@ class MainActivity : AppCompatActivity() {
         val bsEditItem = view.findViewById<AutoCompleteTextView>(R.id.bsEditItem)
         val bsEditPrice = view.findViewById<EditText>(R.id.bsEditPrice)
         val bsEditQty = view.findViewById<EditText>(R.id.bsEditQuantity)
+        val bsBtnTogglePrice = view.findViewById<Button>(R.id.bsBtnTogglePrice)
         val bsBtnAdd = view.findViewById<Button>(R.id.bsBtnAdd)
 
         setupChipsInto(bsChips)
 
+        // --- Автозаполнение: только "начинается с", максимум 8 подсказок ---
         val history = repo.loadHistory().toList()
         val popular = PopularProducts.names
         val all = (history + popular).distinct()
-        bsEditItem.setAdapter(
-            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, all)
-        )
 
+        bsEditItem.threshold = 1
+        bsEditItem.dropDownHeight = (180 * resources.displayMetrics.density).toInt()
+
+        val autoAdapter = object : ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            ArrayList()
+        ) {
+            override fun getFilter(): Filter {
+                return object : Filter() {
+                    override fun performFiltering(constraint: CharSequence?): FilterResults {
+                        val prefix = constraint?.toString()?.lowercase()?.trim() ?: ""
+                        val results = FilterResults()
+                        if (prefix.isEmpty()) {
+                            results.values = emptyList<String>()
+                            results.count = 0
+                            return results
+                        }
+                        val filtered = all.filter {
+                            it.lowercase().startsWith(prefix)
+                        }.take(8)
+                        results.values = filtered
+                        results.count = filtered.size
+                        return results
+                    }
+
+                    @Suppress("UNCHECKED_CAST")
+                    override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                        clear()
+                        val values = results?.values as? List<String> ?: emptyList()
+                        addAll(values)
+                        notifyDataSetChanged()
+                    }
+                }
+            }
+        }
+        bsEditItem.setAdapter(autoAdapter)
+
+        // --- Кнопка "+ Цена" ---
+        bsBtnTogglePrice.setOnClickListener {
+            if (bsEditPrice.visibility == View.GONE) {
+                bsEditPrice.visibility = View.VISIBLE
+                bsEditPrice.requestFocus()
+                bsBtnTogglePrice.text = "− Цена"
+            } else {
+                bsEditPrice.visibility = View.GONE
+                bsEditPrice.text.clear()
+                bsBtnTogglePrice.text = "+ Цена"
+            }
+        }
+
+        // --- Автоподстановка цены и тега при выборе из подсказок ---
         bsEditItem.setOnItemClickListener { _, _, _, _ ->
             val name = bsEditItem.text.toString().trim()
+
+            // Цена — если есть сохранённая, показываем поле и заполняем
             if (bsEditPrice.text.isNullOrEmpty()) {
                 repo.getLastPrice(name)?.let { last ->
                     val txt = if (last % 1.0 == 0.0) last.toInt().toString()
                               else String.format("%.2f", last).trimEnd('0').trimEnd('.')
                     bsEditPrice.setText(txt)
+                    if (bsEditPrice.visibility == View.GONE) {
+                        bsEditPrice.visibility = View.VISIBLE
+                        bsBtnTogglePrice.text = "− Цена"
+                    }
                 }
             }
+
+            // Тег
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
             val autoCat = userCat ?: popularCat
@@ -208,6 +270,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // --- Кнопка "Добавить" ---
         bsBtnAdd.setOnClickListener {
             if (!bsBtnAdd.isEnabled) return@setOnClickListener
             bsBtnAdd.isEnabled = false
@@ -237,7 +300,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             repo.addToHistory(name)
-            repo.saveLastPrice(name, price)
+            if (price > 0) repo.saveLastPrice(name, price)
             repo.saveCategoryForProduct(name, category)
             repo.save(allItems)
             applyFilter()
@@ -253,6 +316,7 @@ class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
+    // ---------- РЕЦЕПТЫ ----------
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
         dish.ingredients.forEach { pair ->
@@ -274,6 +338,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // ---------- НАСТРОЙКИ ----------
     private fun setupSettingsScreen() {
         val swDark = findViewById<MaterialSwitch>(R.id.swDarkTheme)
         val swTags = findViewById<MaterialSwitch>(R.id.swShowTags)
@@ -432,76 +497,4 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectedChipIn(group: ChipGroup): String {
-        val id = group.checkedChipId
-        if (id == View.NO_ID) return "Разное"
-        val chip = group.findViewById<Chip>(id)
-        return chip?.text?.toString() ?: "Разное"
-    }
-
-    private fun categoryColor(cat: String): Int {
-        return when (cat) {
-            "Овощи и фрукты" -> 0xFF66BB6A.toInt()
-            "Молочные продукты" -> 0xFF42A5F5.toInt()
-            "Мясо и рыба" -> 0xFFEF5350.toInt()
-            "Хлеб и выпечка" -> 0xFFFFA726.toInt()
-            "Напитки" -> 0xFF29B6F6.toInt()
-            "Бакалея" -> 0xFFAB47BC.toInt()
-            "Заморозка" -> 0xFF26C6DA.toInt()
-            "Сладости" -> 0xFFEC407A.toInt()
-            "Бытовая химия" -> 0xFF9CCC65.toInt()
-            else -> 0xFF9E9E9E.toInt()
-        }
-    }
-
-    private fun showAddCategoryDialog(onAdded: (String) -> Unit) {
-        val input = EditText(this).apply {
-            hint = "Название категории"
-            setPadding(40, 20, 40, 20)
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Новая категория")
-            .setView(input)
-            .setPositiveButton("Добавить") { _, _ ->
-                val name = input.text.toString().trim()
-                if (name.isNotEmpty()) {
-                    repo.addCustomCategory(name)
-                    setupTabs()
-                    onAdded(name)
-                }
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
-
-    private fun applyFilter() {
-        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
-
-        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
-        if (!showTabs) currentCategory = "Все"
-
-        displayedItems.clear()
-        val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
-
-        val byCategory = if (currentCategory == "Все") allItems
-                         else allItems.filter { it.category == currentCategory }
-
-        displayedItems.addAll(if (showDone) byCategory else byCategory.filter { !it.done })
-
-        adapter.notifyDataSetChanged()
-
-        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
-        recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
-
-        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
-
-        updateTotal()
-    }
-
-    private fun updateTotal() {
-        val total = allItems.filter { !it.done }.sumOf { it.total }
-        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                        else String.format("%.2f", total)
-        textTotal.text = "Итого: $formatted ₽"
-    }
-}
+        val id = gr
