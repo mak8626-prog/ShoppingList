@@ -186,8 +186,6 @@ class MainActivity : AppCompatActivity() {
         emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
         recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
 
-        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
         updateTotal()
     }
 
