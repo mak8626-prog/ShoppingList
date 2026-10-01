@@ -47,18 +47,13 @@ class ShoppingAdapter(
 
         holder.details.text = "${item.category} • $priceStr"
 
-        // Фон темы
         val surface = MaterialColors.getColor(
             holder.card,
             com.google.android.material.R.attr.colorSurface
         )
         val accent = categoryColor(item.category)
-
-        // Заливка — сильное смешение, чтобы было видно
         val blended = ColorUtils.blendARGB(surface, accent, 0.45f)
         holder.card.setCardBackgroundColor(blended)
-
-        // Обводка — чистый цвет категории
         holder.card.strokeColor = accent
         holder.card.strokeWidth = (2 * holder.card.resources.displayMetrics.density).toInt()
 
@@ -73,11 +68,10 @@ class ShoppingAdapter(
             onChange()
         }
 
+        // Удаление — только уведомляем MainActivity. Она сама всё сделает.
         holder.delete.setOnClickListener {
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) {
-                items.removeAt(pos)
-                notifyItemRemoved(pos)
                 onDelete(pos)
             }
         }
