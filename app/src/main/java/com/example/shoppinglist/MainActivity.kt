@@ -115,9 +115,18 @@ class MainActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_list -> { showScreen(0); true }
-                R.id.nav_recipes -> { showScreen(1); true }
-                R.id.nav_settings -> { showScreen(2); true }
+                R.id.nav_list -> {
+                    showScreen(0)
+                    true
+                }
+                R.id.nav_recipes -> {
+                    showScreen(1)
+                    true
+                }
+                R.id.nav_settings -> {
+                    showScreen(2)
+                    true
+                }
                 else -> false
             }
         }
@@ -179,34 +188,37 @@ class MainActivity : AppCompatActivity() {
         val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
         val byCategory = if (currentCategory == "Все") allItems
                          else allItems.filter { it.category == currentCategory }
-        if (showDone) displayedItems.addAll(byCategory)
-        else displayedItems.addAll(byCategory.filter { !it.done })
+        if (showDone) {
+            displayedItems.addAll(byCategory)
+        } else {
+            displayedItems.addAll(byCategory.filter { !it.done })
+        }
 
         adapter.notifyDataSetChanged()
         emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
         recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
-
         updateTotal()
     }
 
     internal fun updateTotal() {
-    val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-    if (!showTotal || allItems.isEmpty()) {
-        textTotal.visibility = View.GONE
-        return
-    }
-    textTotal.visibility = View.VISIBLE
+        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
+        if (!showTotal || allItems.isEmpty()) {
+            textTotal.visibility = View.GONE
+            return
+        }
+        textTotal.visibility = View.VISIBLE
 
-    val total = allItems.filter { !it.done }.sumOf { it.total }
-    val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                    else String.format("%.2f", total)
+        val total = allItems.filter { !it.done }.sumOf { it.total }
+        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
+                        else String.format("%.2f", total)
 
-    val totalCount = allItems.size
-    val doneCount = allItems.count { it.done }
+        val totalCount = allItems.size
+        val doneCount = allItems.count { it.done }
 
-    textTotal.text = if (doneCount > 0) {
-        "Итого: $formatted ₽ · $doneCount из $totalCount"
-    } else {
-        "Итого: $formatted ₽"
+        textTotal.text = if (doneCount > 0) {
+            "Итого: $formatted ₽ · $doneCount из $totalCount"
+        } else {
+            "Итого: $formatted ₽"
+        }
     }
-    }
+}
