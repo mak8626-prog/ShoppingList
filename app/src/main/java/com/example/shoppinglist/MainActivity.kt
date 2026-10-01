@@ -231,16 +231,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupChips() {
         chipGroup.removeAllViews()
+        // Отключаем минимальный размер тач-таргета — иначе Material сам раздувает чипы
+        chipGroup.isEnsureMinTouchTargetSize = false
+
         val cats = allCategoryNames()
         cats.forEach { cat ->
             val chip = Chip(this).apply {
                 text = cat
                 isCheckable = true
                 isClickable = true
-                textSize = 12f
-                chipMinHeight = 28f * resources.displayMetrics.density
-                chipStartPadding = 6f
-                chipEndPadding = 6f
+                textSize = 11f
+                chipMinHeight = 20f * resources.displayMetrics.density
+                chipStartPadding = 4f
+                chipEndPadding = 4f
+                chipIconSize = 0f
+                ensureMinTouchTargetSize = false
                 setPadding(0, 0, 0, 0)
             }
             chipGroup.addView(chip)
@@ -249,10 +254,11 @@ class MainActivity : AppCompatActivity() {
         val plusChip = Chip(this).apply {
             text = "+ тег"
             isCheckable = false
-            textSize = 12f
-            chipMinHeight = 28f * resources.displayMetrics.density
-            chipStartPadding = 6f
-            chipEndPadding = 6f
+            textSize = 11f
+            chipMinHeight = 20f * resources.displayMetrics.density
+            chipStartPadding = 4f
+            chipEndPadding = 4f
+            ensureMinTouchTargetSize = false
             setPadding(0, 0, 0, 0)
             setOnClickListener { showAddCategoryDialog() }
         }
@@ -329,7 +335,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun autofill(name: String, priceField: EditText) {
-        // Цена: сначала последняя сохранённая пользователем
         if (priceField.text.isNullOrEmpty()) {
             repo.getLastPrice(name)?.let { last ->
                 val txt = if (last % 1.0 == 0.0) last.toInt().toString()
@@ -338,7 +343,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Категория: сначала пользовательская, потом из популярных
         if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
             val userCat = repo.getCategoryForProduct(name)
             val popularCat = PopularProducts.getCategory(name)
@@ -374,7 +378,6 @@ class MainActivity : AppCompatActivity() {
         updateTotal()
     }
 
-    // ---------- АВТОДОПОЛНЕНИЕ: популярные + история ----------
     private fun setupAutoComplete(edit: AutoCompleteTextView) {
         val history = repo.loadHistory().toList()
         val popular = PopularProducts.names
