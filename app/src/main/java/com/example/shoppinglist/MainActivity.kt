@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ShoppingAdapter
     private lateinit var textTotal: TextView
     private lateinit var chipGroup: ChipGroup
+    private lateinit var tabLayout: TabLayout
     private lateinit var emptyState: LinearLayout
     private val allItems = mutableListOf<ShoppingItem>()
     private val displayedItems = mutableListOf<ShoppingItem>()
@@ -61,23 +62,13 @@ class MainActivity : AppCompatActivity() {
         val btnClear = findViewById<Button>(R.id.btnClearDone)
         val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
-        val tabLayout = findViewById<TabLayout>(R.id.tabLayout)
+        tabLayout = findViewById(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
         textTotal = findViewById(R.id.textTotal)
         emptyState = findViewById(R.id.emptyState)
 
         setupChips()
-
-        val cats = listOf("Все") + allCategoryNames()
-        cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                currentCategory = tab?.text?.toString() ?: "Все"
-                applyFilter()
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+        setupTabs()
 
         setupAutoComplete(editItem)
         setupAutofill(editItem, editPrice)
@@ -169,15 +160,34 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
+    // ---------- ТАБЫ ----------
+    private fun setupTabs() {
+        tabLayout.removeAllTabs()
+        val cats = listOf("Все") + allCategoryNames()
+        cats.forEach { tabLayout.addTab(tabLayout.newTab().setText(it)) }
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                currentCategory = tab?.text?.toString() ?: "Все"
+                applyFilter()
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
     private fun showSettings() {
         val view = layoutInflater.inflate(R.layout.dialog_settings, null)
         val swDark = view.findViewById<MaterialSwitch>(R.id.swDarkTheme)
+        val swTabs = view.findViewById<MaterialSwitch>(R.id.swShowTabs)
+        val swTags = view.findViewById<MaterialSwitch>(R.id.swShowTags)
         val swCompact = view.findViewById<MaterialSwitch>(R.id.swCompact)
         val swShowDone = view.findViewById<MaterialSwitch>(R.id.swShowDone)
         val swShowTotal = view.findViewById<MaterialSwitch>(R.id.swShowTotal)
         val swClearFields = view.findViewById<MaterialSwitch>(R.id.swClearFields)
 
         swDark.isChecked = repo.getBool(ShoppingRepository.SET_DARK_THEME, false)
+        swTabs.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
+        swTags.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
         swCompact.isChecked = repo.getBool(ShoppingRepository.SET_COMPACT, false)
         swShowDone.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
         swShowTotal.isChecked = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
@@ -188,6 +198,8 @@ class MainActivity : AppCompatActivity() {
             .setView(view)
             .setPositiveButton("Ок") { _, _ ->
                 repo.setBool(ShoppingRepository.SET_DARK_THEME, swDark.isChecked)
+                repo.setBool(ShoppingRepository.SET_SHOW_TABS, swTabs.isChecked)
+                repo.setBool(ShoppingRepository.SET_SHOW_TAGS, swTags.isChecked)
                 repo.setBool(ShoppingRepository.SET_COMPACT, swCompact.isChecked)
                 repo.setBool(ShoppingRepository.SET_SHOW_DONE, swShowDone.isChecked)
                 repo.setBool(ShoppingRepository.SET_SHOW_TOTAL, swShowTotal.isChecked)
@@ -211,6 +223,7 @@ class MainActivity : AppCompatActivity() {
         view.clearFocus()
     }
 
+    // ---------- ЧИПЫ ----------
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
         return (base + repo.loadCustomCategories()).distinct()
@@ -241,6 +254,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun selectedCategory(): String {
+        // Если теги скрыты — всегда "Разное"
+        if (!repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) return "Разное"
+
         val id = chipGroup.checkedChipId
         if (id == View.NO_ID) return "Разное"
         val chip = chipGroup.findViewById<Chip>(id)
@@ -270,6 +286,7 @@ class MainActivity : AppCompatActivity() {
                 if (name.isNotEmpty()) {
                     repo.addCustomCategory(name)
                     setupChips()
+                    setupTabs()
                     selectCategory(name)
                 }
             }
@@ -277,6 +294,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    // ---------- АВТОЗАПОЛНЕНИЕ ----------
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
         val handler = Handler(Looper.getMainLooper())
         var pending: Runnable? = null
@@ -309,10 +327,24 @@ class MainActivity : AppCompatActivity() {
                 priceField.setText(txt)
             }
         }
-        repo.getCategoryForProduct(name)?.let { selectCategory(it) }
+        // Категорию подставляем только если теги включены
+        if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
+            repo.getCategoryForProduct(name)?.let { selectCategory(it) }
+        }
     }
 
+    // ---------- ФИЛЬТР + ВИДИМОСТЬ ----------
     private fun applyFilter() {
+        val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
+        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
+
+        // Скрываем/показываем чипы и табы
+        chipGroup.visibility = if (showTags) View.VISIBLE else View.GONE
+        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
+
+        // Если табы скрыты — сбрасываем фильтр
+        if (!showTabs) currentCategory = "Все"
+
         displayedItems.clear()
         val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
 
@@ -323,7 +355,6 @@ class MainActivity : AppCompatActivity() {
 
         adapter.notifyDataSetChanged()
 
-        // Пустое состояние
         emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
 
         val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
