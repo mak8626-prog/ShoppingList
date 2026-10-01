@@ -1,3 +1,4 @@
+
 package com.example.shoppinglist
 
 import android.content.Context
@@ -7,9 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -509,4 +508,55 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
-            v
+            val userCat = repo.getCategoryForProduct(name)
+            val popularCat = PopularProducts.getCategory(name)
+            (userCat ?: popularCat)?.let { selectCategory(it) }
+        }
+    }
+
+    private fun applyFilter() {
+        val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
+        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
+
+        chipGroup.visibility = if (showTags) View.VISIBLE else View.GONE
+        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
+
+        if (!showTabs) currentCategory = "Все"
+
+        displayedItems.clear()
+        val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
+
+        val byCategory = if (currentCategory == "Все") allItems
+                         else allItems.filter { it.category == currentCategory }
+
+        displayedItems.addAll(if (showDone) byCategory else byCategory.filter { !it.done })
+
+        adapter.notifyDataSetChanged()
+
+        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
+
+        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
+        cardTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
+
+        updateTotal()
+    }
+
+    private fun setupAutoComplete(edit: AutoCompleteTextView) {
+        val history = repo.loadHistory().toList()
+        val popular = PopularProducts.names
+        val all = (history + popular).distinct()
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            all
+        )
+        edit.setAdapter(adapter)
+    }
+
+    private fun updateTotal() {
+        val total = allItems.filter { !it.done }.sumOf { it.total }
+        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
+                        else String.format("%.2f", total)
+        textTotal.text = "Итого: $formatted ₽"
+    }
+}
