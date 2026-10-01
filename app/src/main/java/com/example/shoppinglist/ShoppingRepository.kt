@@ -103,17 +103,19 @@ class ShoppingRepository(context: Context) {
     fun setBool(key: String, value: Boolean) { prefs.edit().putBoolean(key, value).apply() }
 
     companion object {
-        const val KEY_ITEMS = "items"
-        const val KEY_HISTORY = "history"
-        const val KEY_PRICES = "prices"
-        const val KEY_PRODUCT_CATS = "product_cats"
-        const val KEY_CUSTOM_CATS = "custom_cats"
+    const val KEY_ITEMS = "items"
+    const val KEY_HISTORY = "history"
+    const val KEY_PRICES = "prices"
+    const val KEY_PRODUCT_CATS = "product_cats"
+    const val KEY_CUSTOM_CATS = "custom_cats"
 
-        // Настройки
-        const val SET_DARK_THEME = "dark_theme"
-        const val SET_COMPACT = "compact_mode"
-        const val SET_SHOW_DONE = "show_done"
-        const val SET_SHOW_TOTAL = "show_total"
-        const val SET_CLEAR_FIELDS = "clear_fields"
+    // Настройки
+    const val SET_DARK_THEME = "dark_theme"
+    const val SET_COMPACT = "compact_mode"
+    const val SET_SHOW_DONE = "show_done"
+    const val SET_SHOW_TOTAL = "show_total"
+    const val SET_CLEAR_FIELDS = "clear_fields"
+    const val SET_SHOW_TAGS = "show_tags"
+    const val SET_SHOW_TABS = "show_tabs"
     }
 }
