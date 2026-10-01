@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Шапка -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,7 +41,6 @@
                 android:scaleType="centerInside" />
         </LinearLayout>
 
-        <!-- Контейнер с тремя экранами -->
         <FrameLayout
             android:id="@+id/screenContainer"
             android:layout_width="match_parent"
@@ -64,7 +62,6 @@
                 android:visibility="gone" />
         </FrameLayout>
 
-        <!-- Нижняя навигация -->
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNav"
             android:layout_width="match_parent"
@@ -74,17 +71,23 @@
             app:labelVisibilityMode="labeled" />
     </LinearLayout>
 
-    <!-- FAB круглый, справа внизу -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fabAdd"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom|end"
-    android:layout_marginEnd="16dp"
-    android:layout_marginBottom="90dp"
-    android:contentDescription="Добавить"
-    android:src="@android:drawable/ic_input_add"
-    app:backgroundTint="?attr/colorPrimary"
-    app:tint="?attr/colorOnPrimary"
-    app:shapeAppearanceOverlay="@style/CircleFab" />
+    <!-- FAB в обёртке FrameLayout — Snackbar её больше не сдвинет -->
+    <FrameLayout
+        android:id="@+id/fabContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="90dp">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="Добавить"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="?attr/colorPrimary"
+            app:tint="?attr/colorOnPrimary"
+            app:shapeAppearanceOverlay="@style/CircleFab" />
+    </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
