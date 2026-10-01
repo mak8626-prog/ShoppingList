@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Нажми на кнопку «+» справа внизу, чтобы добавить первый товар"
+                android:text="Нажми «+» чтобы добавить товар"
                 android:textSize="14sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center" />
