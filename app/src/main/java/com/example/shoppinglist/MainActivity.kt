@@ -160,7 +160,6 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
-    // ---------- ТАБЫ ----------
     private fun setupTabs() {
         tabLayout.removeAllTabs()
         val cats = listOf("Все") + allCategoryNames()
@@ -223,55 +222,28 @@ class MainActivity : AppCompatActivity() {
         view.clearFocus()
     }
 
-    // ---------- ЧИПЫ ----------
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
         return (base + repo.loadCustomCategories()).distinct()
     }
 
     private fun setupChips() {
-    chipGroup.removeAllViews()
-    val cats = allCategoryNames()
-    cats.forEach { cat ->
-        val chip = Chip(this).apply {
-            text = cat
-            isCheckable = true
-            isClickable = true
-            textSize = 11f
-            chipMinHeight = 20f * resources.displayMetrics.density
-            chipStartPadding = 4f
-            chipEndPadding = 4f
-            setPadding(0, 0, 0, 0)
+        chipGroup.removeAllViews()
+        val cats = allCategoryNames()
+        cats.forEach { cat ->
+            val chip = Chip(this).apply {
+                text = cat
+                isCheckable = true
+                isClickable = true
+                textSize = 11f
+            }
+            chipGroup.addView(chip)
         }
-        chipGroup.addView(chip)
-    }
-
-    val plusChip = Chip(this).apply {
-        text = "+ тег"
-        isCheckable = false
-        textSize = 11f
-        chipMinHeight = 20f * resources.displayMetrics.density
-        chipStartPadding = 4f
-        chipEndPadding = 4f
-        setPadding(0, 0, 0, 0)
-        setOnClickListener { showAddCategoryDialog() }
-    }
-    chipGroup.addView(plusChip)
-
-    if (chipGroup.childCount > 0) {
-        (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
-    }
-    }
 
         val plusChip = Chip(this).apply {
             text = "+ тег"
             isCheckable = false
             textSize = 11f
-            chipMinHeight = 20f * resources.displayMetrics.density
-            chipStartPadding = 4f
-            chipEndPadding = 4f
-            ensureMinTouchTargetSize = false
-            setPadding(0, 0, 0, 0)
             setOnClickListener { showAddCategoryDialog() }
         }
         chipGroup.addView(plusChip)
@@ -321,7 +293,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- АВТОЗАПОЛНЕНИЕ ----------
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
         val handler = Handler(Looper.getMainLooper())
         var pending: Runnable? = null
@@ -362,7 +333,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- ФИЛЬТР + ВИДИМОСТЬ ----------
     private fun applyFilter() {
         val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
         val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
