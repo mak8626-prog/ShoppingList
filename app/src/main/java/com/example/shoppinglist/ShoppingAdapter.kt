@@ -13,7 +13,8 @@ class ShoppingAdapter(
     private val items: MutableList<ShoppingItem>,
     private val compact: Boolean,
     private val onChange: () -> Unit,
-    private val onDelete: (Int) -> Unit
+    private val onDelete: (Int) -> Unit,
+    private val onEdit: (Int) -> Unit
 ) : RecyclerView.Adapter<ShoppingAdapter.VH>() {
 
     class VH(view: View) : RecyclerView.ViewHolder(view) {
@@ -64,6 +65,12 @@ class ShoppingAdapter(
                 notifyItemRemoved(pos)
                 onDelete(pos)
             }
+        }
+
+        // Тап по элементу — редактирование
+        holder.itemView.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos != RecyclerView.NO_POSITION) onEdit(pos)
         }
     }
 
