@@ -21,6 +21,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.graphics.ColorUtils
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -290,6 +291,9 @@ class MainActivity : AppCompatActivity() {
                 chipStartPadding = 4f
                 chipEndPadding = 4f
             }
+            val accent = categoryColor(cat)
+            val bg = ColorUtils.setAlphaComponent(accent, 80)
+            chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(bg)
             chipGroup.addView(chip)
         }
 
@@ -306,6 +310,21 @@ class MainActivity : AppCompatActivity() {
 
         if (chipGroup.childCount > 0) {
             (chipGroup.getChildAt(0) as? Chip)?.isChecked = true
+        }
+    }
+
+    private fun categoryColor(cat: String): Int {
+        return when (cat) {
+            "Овощи и фрукты" -> 0xFF66BB6A.toInt()
+            "Молочные продукты" -> 0xFF42A5F5.toInt()
+            "Мясо и рыба" -> 0xFFEF5350.toInt()
+            "Хлеб и выпечка" -> 0xFFFFA726.toInt()
+            "Напитки" -> 0xFF29B6F6.toInt()
+            "Бакалея" -> 0xFFAB47BC.toInt()
+            "Заморозка" -> 0xFF26C6DA.toInt()
+            "Сладости" -> 0xFFEC407A.toInt()
+            "Бытовая химия" -> 0xFF9CCC65.toInt()
+            else -> 0xFF9E9E9E.toInt()
         }
     }
 
