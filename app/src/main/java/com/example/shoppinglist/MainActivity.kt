@@ -7,7 +7,9 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         val btnClear = findViewById<Button>(R.id.btnClearDone)
         val btnSettings = findViewById<ImageButton>(R.id.btnSettings)
         val btnShare = findViewById<ImageButton>(R.id.btnShare)
+        val btnRecipes = findViewById<ImageButton>(R.id.btnRecipes)
         val recycler = findViewById<RecyclerView>(R.id.recycler)
         tabLayout = findViewById(R.id.tabLayout)
         chipGroup = findViewById(R.id.chipGroup)
@@ -162,8 +165,79 @@ class MainActivity : AppCompatActivity() {
 
         btnSettings.setOnClickListener { showSettings() }
         btnShare.setOnClickListener { shareList() }
+        btnRecipes.setOnClickListener { showRecipesDialog() }
 
         applyFilter()
+    }
+
+    // ---------- ШАБЛОНЫ БЛЮД ----------
+    private fun showRecipesDialog() {
+        val view = layoutInflater.inflate(R.layout.dialog_recipes, null)
+        val recycler = view.findViewById<RecyclerView>(R.id.recipesRecycler)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Выбери блюдо")
+            .setView(view)
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        val recipeAdapter = RecipesAdapter(DishTemplates.dishes) { dish ->
+            dialog.dismiss()
+            addDishIngredients(dish)
+        }
+        recycler.adapter = recipeAdapter
+        dialog.show()
+    }
+
+    private fun addDishIngredients(dish: DishTemplates.Dish) {
+        var added = 0
+        dish.ingredients.forEach { (name, category) ->
+            // Не добавляем, если уже есть в списке с тем же названием
+            val exists = allItems.any { it.name.equals(name, ignoreCase = true) }
+            if (!exists) {
+                val price = repo.getLastPrice(name) ?: 0.0
+                allItems.add(ShoppingItem(name, category, price, 1))
+                added++
+            }
+        }
+        repo.save(allItems)
+        applyFilter()
+
+        if (added > 0) {
+            Toast.makeText(this, "${dish.emoji} ${dish.name}: добавлено $added", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Все ингредиенты уже в списке", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ---------- КЛАСС АДАПТЕРА РЕЦЕПТОВ (внутренний) ----------
+    private class RecipesAdapter(
+        private val dishes: List<DishTemplates.Dish>,
+        private val onClick: (DishTemplates.Dish) -> Unit
+    ) : RecyclerView.Adapter<RecipesAdapter.VH>() {
+
+        class VH(view: View) : RecyclerView.ViewHolder(view) {
+            val emoji: TextView = view.findViewById(R.id.recipeEmoji)
+            val name: TextView = view.findViewById(R.id.recipeName)
+            val details: TextView = view.findViewById(R.id.recipeDetails)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val v = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_recipe, parent, false)
+            return VH(v)
+        }
+
+        override fun getItemCount() = dishes.size
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val dish = dishes[position]
+            holder.emoji.text = dish.emoji
+            holder.name.text = dish.name
+            holder.details.text = "${dish.ingredients.size} ингредиентов"
+            holder.itemView.setOnClickListener { onClick(dish) }
+        }
     }
 
     // ---------- ПОДЕЛИТЬСЯ ----------
@@ -176,7 +250,6 @@ class MainActivity : AppCompatActivity() {
         val sb = StringBuilder()
         sb.append("🛒 Список покупок\n\n")
 
-        // Группировка по категориям
         val byCat = allItems.groupBy { it.category }
         byCat.forEach { (cat, items) ->
             if (cat != "Разное" || byCat.size > 1) {
@@ -433,88 +506,4 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAutofill(edit: AutoCompleteTextView, priceField: EditText) {
-        val handler = Handler(Looper.getMainLooper())
-        var pending: Runnable? = null
-
-        edit.setOnItemClickListener { _, _, _, _ ->
-            autofill(edit.text.toString().trim(), priceField)
-        }
-
-        edit.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                pending?.let { handler.removeCallbacks(it) }
-                val r = Runnable {
-                    val name = s?.toString()?.trim() ?: return@Runnable
-                    if (name.isEmpty()) return@Runnable
-                    autofill(name, priceField)
-                }
-                pending = r
-                handler.postDelayed(r, 600)
-            }
-        })
-    }
-
-    private fun autofill(name: String, priceField: EditText) {
-        if (priceField.text.isNullOrEmpty()) {
-            repo.getLastPrice(name)?.let { last ->
-                val txt = if (last % 1.0 == 0.0) last.toInt().toString()
-                          else String.format("%.2f", last).trimEnd('0').trimEnd('.')
-                priceField.setText(txt)
-            }
-        }
-
-        if (repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)) {
-            val userCat = repo.getCategoryForProduct(name)
-            val popularCat = PopularProducts.getCategory(name)
-            (userCat ?: popularCat)?.let { selectCategory(it) }
-        }
-    }
-
-    private fun applyFilter() {
-        val showTags = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
-        val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TABS, true)
-
-        chipGroup.visibility = if (showTags) View.VISIBLE else View.GONE
-        tabLayout.visibility = if (showTabs) View.VISIBLE else View.GONE
-
-        if (!showTabs) currentCategory = "Все"
-
-        displayedItems.clear()
-        val showDone = repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
-
-        val byCategory = if (currentCategory == "Все") allItems
-                         else allItems.filter { it.category == currentCategory }
-
-        displayedItems.addAll(if (showDone) byCategory else byCategory.filter { !it.done })
-
-        adapter.notifyDataSetChanged()
-
-        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
-
-        val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        cardTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
-
-        updateTotal()
-    }
-
-    private fun setupAutoComplete(edit: AutoCompleteTextView) {
-        val history = repo.loadHistory().toList()
-        val popular = PopularProducts.names
-        val all = (history + popular).distinct()
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            all
-        )
-        edit.setAdapter(adapter)
-    }
-
-    private fun updateTotal() {
-        val total = allItems.filter { !it.done }.sumOf { it.total }
-        val formatted = if (total % 1.0 == 0.0) total.toInt().toString()
-                        else String.format("%.2f", total)
-        textTotal.text = "Итого: $formatted ₽"
-    }
-}
+        val handler = Handler(Looper.getMainLooper
