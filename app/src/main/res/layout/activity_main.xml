@@ -76,14 +76,15 @@
 
     <!-- FAB круглый, справа внизу -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="90dp"
-        android:contentDescription="Добавить"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="?attr/colorPrimary"
-        app:tint="?attr/colorOnPrimary" />
+    android:id="@+id/fabAdd"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|end"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="90dp"
+    android:contentDescription="Добавить"
+    android:src="@android:drawable/ic_input_add"
+    app:backgroundTint="?attr/colorPrimary"
+    app:tint="?attr/colorOnPrimary"
+    app:shapeAppearanceOverlay="@style/CircleFab" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
