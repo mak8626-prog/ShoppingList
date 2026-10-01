@@ -31,10 +31,6 @@ class ShoppingAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_shopping, parent, false)
-        if (compact) {
-            val d = parent.context.resources.displayMetrics.density
-            v.setPadding(0, (3 * d).toInt(), 0, (3 * d).toInt())
-        }
         return VH(v)
     }
 
@@ -51,14 +47,20 @@ class ShoppingAdapter(
 
         holder.details.text = "${item.category} • $priceStr"
 
-        // Цвет карточки по категории: смешиваем с фоном темы
+        // Фон темы
         val surface = MaterialColors.getColor(
             holder.card,
             com.google.android.material.R.attr.colorSurface
         )
         val accent = categoryColor(item.category)
-        val blended = ColorUtils.blendARGB(surface, accent, 0.22f)
+
+        // Заливка — сильное смешение, чтобы было видно
+        val blended = ColorUtils.blendARGB(surface, accent, 0.45f)
         holder.card.setCardBackgroundColor(blended)
+
+        // Обводка — чистый цвет категории
+        holder.card.strokeColor = accent
+        holder.card.strokeWidth = (2 * holder.card.resources.displayMetrics.density).toInt()
 
         holder.check.isChecked = item.done
         strike(holder.text, item.done)
@@ -88,16 +90,16 @@ class ShoppingAdapter(
 
     private fun categoryColor(cat: String): Int {
         return when (cat) {
-            "Овощи и фрукты" -> 0xFF66BB6A.toInt()   // зелёный
-            "Молочные продукты" -> 0xFF42A5F5.toInt() // синий
-            "Мясо и рыба" -> 0xFFEF5350.toInt()       // красный
-            "Хлеб и выпечка" -> 0xFFFFA726.toInt()    // оранжевый
-            "Напитки" -> 0xFF29B6F6.toInt()           // голубой
-            "Бакалея" -> 0xFFAB47BC.toInt()           // фиолетовый
-            "Заморозка" -> 0xFF26C6DA.toInt()         // циан
-            "Сладости" -> 0xFFEC407A.toInt()          // розовый
-            "Бытовая химия" -> 0xFF9CCC65.toInt()     // лайм
-            else -> 0xFF9E9E9E.toInt()                // серый
+            "Овощи и фрукты" -> 0xFF66BB6A.toInt()
+            "Молочные продукты" -> 0xFF42A5F5.toInt()
+            "Мясо и рыба" -> 0xFFEF5350.toInt()
+            "Хлеб и выпечка" -> 0xFFFFA726.toInt()
+            "Напитки" -> 0xFF29B6F6.toInt()
+            "Бакалея" -> 0xFFAB47BC.toInt()
+            "Заморозка" -> 0xFF26C6DA.toInt()
+            "Сладости" -> 0xFFEC407A.toInt()
+            "Бытовая химия" -> 0xFF9CCC65.toInt()
+            else -> 0xFF9E9E9E.toInt()
         }
     }
 
