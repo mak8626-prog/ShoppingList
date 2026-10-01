@@ -1,4 +1,5 @@
 <resources>
+    <string name="recipes">Рецепты</string>
     <string name="share">Поделиться</string>
     <string name="empty_hint">Список пуст.\nДобавь первый товар!</string>
     <string name="app_name">Список покупок</string>
