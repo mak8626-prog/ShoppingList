@@ -44,13 +44,22 @@
                         android:textColor="?attr/colorPrimary" />
 
                     <ImageButton
-                        android:id="@+id/btnShare"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/share"
-                        android:src="@drawable/ic_share"
-                        android:scaleType="centerInside" />
+    android:id="@+id/btnRecipes"
+    android:layout_width="40dp"
+    android:layout_height="40dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:contentDescription="@string/recipes"
+    android:src="@drawable/ic_recipe"
+    android:scaleType="centerInside" />
+
+<ImageButton
+    android:id="@+id/btnShare"
+    android:layout_width="40dp"
+    android:layout_height="40dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:contentDescription="@string/share"
+    android:src="@drawable/ic_share"
+    android:scaleType="centerInside" />
 
                     <ImageButton
                         android:id="@+id/btnSettings"
