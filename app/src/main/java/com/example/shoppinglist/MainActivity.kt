@@ -84,7 +84,12 @@ class MainActivity : AppCompatActivity() {
             compact = compact,
             onChange = {
                 repo.save(allItems)
-                applyFilter()
+                val hideDone = !repo.getBool(ShoppingRepository.SET_SHOW_DONE, true)
+                if (hideDone) {
+                    recycler.post { applyFilter() }
+                } else {
+                    updateTotal()
+                }
             },
             onDelete = { pos -> removeWithUndo(pos) },
             onEdit = { pos -> showEditDialog(pos) }
@@ -499,4 +504,4 @@ class MainActivity : AppCompatActivity() {
                         else String.format("%.2f", total)
         textTotal.text = "Итого: $formatted ₽"
     }
-}        
+}
