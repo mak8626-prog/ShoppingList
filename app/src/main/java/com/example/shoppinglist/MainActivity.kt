@@ -245,7 +245,8 @@ class MainActivity : AppCompatActivity() {
             val name = bsEditItem.text.toString().trim()
 
             if (bsEditPrice.text.isNullOrEmpty()) {
-                repo.getLastPrice(name)?.let { last ->
+                val last = repo.getLastPrice(name)
+                if (last != null) {
                     val txt = if (last % 1.0 == 0.0) last.toInt().toString()
                               else String.format("%.2f", last).trimEnd('0').trimEnd('.')
                     bsEditPrice.setText(txt)
@@ -498,5 +499,4 @@ class MainActivity : AppCompatActivity() {
         return when (cat) {
             "Овощи и фрукты" -> 0xFF66BB6A.toInt()
             "Молочные продукты" -> 0xFF42A5F5.toInt()
-            "Мясо и рыба" -> 0xFFEF5350.toInt()
-            "Хлеб и выпечка"
+            "Мясо и рыба" -> 0xFFEF5350.toIn
