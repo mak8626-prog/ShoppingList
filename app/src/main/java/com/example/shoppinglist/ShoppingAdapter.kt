@@ -1,8 +1,8 @@
 package com.example.shoppinglist
 
 import android.graphics.Paint
-import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
@@ -59,7 +59,7 @@ class ShoppingAdapter(
         strike(holder.details, item.done)
 
         holder.check.setOnCheckedChangeListener { _, isChecked ->
-            holder.itemView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK)
             item.done = isChecked
             strike(holder.text, isChecked)
             strike(holder.details, isChecked)
@@ -67,13 +67,26 @@ class ShoppingAdapter(
         }
 
         holder.delete.setOnClickListener {
-            holder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+            holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onDelete(pos)
         }
 
+        // Лёгкая анимация "пружинки" при нажатии
+        holder.itemView.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    v.animate().scaleX(0.98f).scaleY(0.98f).setDuration(80).start()
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+                }
+            }
+            false
+        }
+
         holder.itemView.setOnClickListener {
-            holder.itemView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onEdit(pos)
         }
