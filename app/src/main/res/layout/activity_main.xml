@@ -12,229 +12,62 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/rootLayout"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="8dp"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/app_name"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorPrimary" />
-
-                    <ImageButton
-    android:id="@+id/btnRecipes"
-    android:layout_width="40dp"
-    android:layout_height="40dp"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:contentDescription="@string/recipes"
-    android:src="@drawable/ic_recipe"
-    android:scaleType="centerInside" />
-
-<ImageButton
-    android:id="@+id/btnShare"
-    android:layout_width="40dp"
-    android:layout_height="40dp"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:contentDescription="@string/share"
-    android:src="@drawable/ic_share"
-    android:scaleType="centerInside" />
-
-                    <ImageButton
-                        android:id="@+id/btnSettings"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="@string/settings"
-                        android:src="@drawable/ic_settings"
-                        android:scaleType="centerInside" />
-                </LinearLayout>
-
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tabLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:tabMode="scrollable"
-                    app:tabIndicatorColor="?attr/colorPrimary"
-                    app:tabSelectedTextColor="?attr/colorPrimary"
-                    app:tabTextColor="?attr/colorOnSurfaceVariant" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginTop="8dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="?attr/colorSurface"
-                    app:strokeColor="?attr/colorSurfaceVariant"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="10dp">
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chipGroup"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            app:chipSpacingHorizontal="4dp"
-                            app:chipSpacingVertical="0dp"
-                            app:singleSelection="true"
-                            app:selectionRequired="true" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="6dp"
-                            android:gravity="center_vertical">
-
-                            <AutoCompleteTextView
-                                android:id="@+id/editItem"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:hint="@string/hint_new_item"
-                                android:completionThreshold="1"
-                                android:inputType="textCapSentences"
-                                android:imeOptions="actionDone"
-                                android:textSize="15sp"
-                                android:maxLines="1" />
-
-                            <EditText
-                                android:id="@+id/editPrice"
-                                android:layout_width="66dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:hint="@string/hint_price"
-                                android:inputType="numberDecimal"
-                                android:textSize="15sp"
-                                android:maxLines="1" />
-
-                            <EditText
-                                android:id="@+id/editQuantity"
-                                android:layout_width="46dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:hint="@string/hint_qty"
-                                android:inputType="number"
-                                android:text="1"
-                                android:textSize="15sp"
-                                android:maxLines="1" />
-                        </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnAdd"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/add"
-                            android:textSize="15sp"
-                            app:cornerRadius="12dp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <LinearLayout
-                    android:id="@+id/emptyState"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="32dp"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🛒"
-                        android:textSize="48sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/empty_hint"
-                        android:textSize="15sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:gravity="center" />
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginEnd="12dp"
-                    android:layout_marginBottom="12dp" />
-            </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
-
-        <LinearLayout
+        <!-- Шапка -->
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="10dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="6dp"
+            android:text="@string/app_name"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Контейнер с тремя экранами -->
+        <FrameLayout
+            android:id="@+id/screenContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <include
+                android:id="@+id/screenList"
+                layout="@layout/screen_list" />
+
+            <include
+                android:id="@+id/screenRecipes"
+                layout="@layout/screen_recipes"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/screenSettings"
+                layout="@layout/screen_settings"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <!-- Нижняя навигация -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:background="?attr/colorSurface"
-            android:elevation="6dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTotal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer">
-
-                <TextView
-                    android:id="@+id/textTotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnPrimaryContainer"
-                    android:gravity="center"
-                    android:text="@string/total_zero" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnClearDone"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/clear_done"
-                app:cornerRadius="12dp" />
-        </LinearLayout>
+            app:menu="@menu/bottom_nav_menu"
+            app:labelVisibilityMode="labeled" />
     </LinearLayout>
+
+    <!-- FAB для добавления товара (виден только на экране списка) -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="86dp"
+        android:text="Добавить"
+        android:textColor="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
+        app:icon="@android:drawable/ic_input_add"
+        app:iconTint="?attr/colorOnPrimary" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
