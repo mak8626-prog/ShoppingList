@@ -1,6 +1,5 @@
 package com.example.shoppinglist
 
-import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
@@ -8,6 +7,7 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -21,10 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -37,14 +36,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var screenList: View
     private lateinit var screenRecipes: View
     private lateinit var screenSettings: View
-    private lateinit var fabAdd: ExtendedFloatingActionButton
+    private lateinit var fabAdd: FloatingActionButton
+    private lateinit var btnClearDone: ImageButton
 
     private lateinit var tabLayout: TabLayout
     private lateinit var recycler: RecyclerView
     private lateinit var emptyState: LinearLayout
     private lateinit var textTotal: TextView
-    private lateinit var cardTotal: MaterialCardView
-    private lateinit var btnClearDone: Button
 
     private val allItems = mutableListOf<ShoppingItem>()
     private val displayedItems = mutableListOf<ShoppingItem>()
@@ -69,13 +67,12 @@ class MainActivity : AppCompatActivity() {
         screenRecipes = findViewById(R.id.screenRecipes)
         screenSettings = findViewById(R.id.screenSettings)
         fabAdd = findViewById(R.id.fabAdd)
+        btnClearDone = findViewById(R.id.btnClearDone)
 
         tabLayout = findViewById(R.id.tabLayout)
         recycler = findViewById(R.id.recycler)
         emptyState = findViewById(R.id.emptyState)
         textTotal = findViewById(R.id.textTotal)
-        cardTotal = findViewById(R.id.cardTotal)
-        btnClearDone = findViewById(R.id.btnClearDone)
 
         setupTabs()
 
@@ -150,9 +147,9 @@ class MainActivity : AppCompatActivity() {
         screenRecipes.visibility = if (index == 1) View.VISIBLE else View.GONE
         screenSettings.visibility = if (index == 2) View.VISIBLE else View.GONE
         fabAdd.visibility = if (index == 0) View.VISIBLE else View.GONE
+        btnClearDone.visibility = if (index == 0) View.VISIBLE else View.GONE
     }
 
-    // ---------- ТАБЫ ----------
     private fun setupTabs() {
         tabLayout.removeAllTabs()
         val cats = listOf("Все") + allCategoryNames()
@@ -167,7 +164,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ---------- НИЖНИЙ ЛИСТ (ФОРМА) ----------
     private fun showAddSheet() {
         val sheet = BottomSheetDialog(this)
         val view = layoutInflater.inflate(R.layout.bottom_sheet_add, null)
@@ -225,7 +221,6 @@ class MainActivity : AppCompatActivity() {
         sheet.show()
     }
 
-    // ---------- РЕЦЕПТЫ ----------
     private fun addDishIngredients(dish: DishTemplates.Dish) {
         var added = 0
         dish.ingredients.forEach { pair ->
@@ -247,7 +242,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- НАСТРОЙКИ ----------
     private fun setupSettingsScreen() {
         val swDark = findViewById<MaterialSwitch>(R.id.swDarkTheme)
         val swTags = findViewById<MaterialSwitch>(R.id.swShowTags)
@@ -288,7 +282,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ---------- УДАЛЕНИЕ С ОТМЕНОЙ ----------
     private fun removeWithUndo(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val removed = displayedItems.removeAt(pos)
@@ -312,7 +305,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- РЕДАКТИРОВАНИЕ ----------
     private fun showEditDialog(pos: Int) {
         if (pos < 0 || pos >= displayedItems.size) return
         val item = displayedItems[pos]
@@ -357,7 +349,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- КАТЕГОРИИ / ЧИПЫ В ШИТЕ ----------
     private fun allCategoryNames(): List<String> {
         val base = resources.getStringArray(R.array.categories).toList()
         return (base + repo.loadCustomCategories()).distinct()
@@ -454,7 +445,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- ФИЛЬТР ----------
     private fun applyFilter() {
         val showTabs = repo.getBool(ShoppingRepository.SET_SHOW_TAGS, true)
 
@@ -475,7 +465,7 @@ class MainActivity : AppCompatActivity() {
         recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
 
         val showTotal = repo.getBool(ShoppingRepository.SET_SHOW_TOTAL, true)
-        cardTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
+        textTotal.visibility = if (showTotal) View.VISIBLE else View.GONE
 
         updateTotal()
     }
