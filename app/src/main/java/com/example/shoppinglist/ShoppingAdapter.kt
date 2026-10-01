@@ -1,9 +1,11 @@
 package com.example.shoppinglist
 
 import android.graphics.Paint
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
@@ -45,9 +47,12 @@ class ShoppingAdapter(
             "×${item.quantity}"
 
         holder.details.text = "${item.category} • $priceStr"
-
-        // Только тонкая полоска слева — категория. Фон нейтральный.
         holder.stripe.setBackgroundColor(categoryColor(item.category))
+
+        // Плавное появление при привязке
+        val anim = AnimationUtils.loadAnimation(holder.itemView.context, android.R.anim.fade_in)
+        anim.duration = 220
+        holder.itemView.startAnimation(anim)
 
         holder.check.setOnCheckedChangeListener(null)
         holder.check.isChecked = item.done
@@ -55,6 +60,8 @@ class ShoppingAdapter(
         strike(holder.details, item.done)
 
         holder.check.setOnCheckedChangeListener { _, isChecked ->
+            // Лёгкая вибрация на отметку
+            holder.itemView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
             item.done = isChecked
             strike(holder.text, isChecked)
             strike(holder.details, isChecked)
@@ -62,31 +69,30 @@ class ShoppingAdapter(
         }
 
         holder.delete.setOnClickListener {
+            // Вибрация посильнее на удаление
+            holder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             val pos = holder.bindingAdapterPosition
-            if (pos != RecyclerView.NO_POSITION) {
-                onDelete(pos)
-            }
+            if (pos != RecyclerView.NO_POSITION) onDelete(pos)
         }
 
         holder.itemView.setOnClickListener {
+            holder.itemView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             val pos = holder.bindingAdapterPosition
             if (pos != RecyclerView.NO_POSITION) onEdit(pos)
         }
     }
 
-    private fun categoryColor(cat: String): Int {
-        return when (cat) {
-            "Овощи и фрукты" -> 0xFF66BB6A.toInt()
-            "Молочные продукты" -> 0xFF42A5F5.toInt()
-            "Мясо и рыба" -> 0xFFEF5350.toInt()
-            "Хлеб и выпечка" -> 0xFFFFA726.toInt()
-            "Напитки" -> 0xFF29B6F6.toInt()
-            "Бакалея" -> 0xFFAB47BC.toInt()
-            "Заморозка" -> 0xFF26C6DA.toInt()
-            "Сладости" -> 0xFFEC407A.toInt()
-            "Бытовая химия" -> 0xFF9CCC65.toInt()
-            else -> 0xFF9E9E9E.toInt()
-        }
+    private fun categoryColor(cat: String): Int = when (cat) {
+        "Овощи и фрукты" -> 0xFF66BB6A.toInt()
+        "Молочные продукты" -> 0xFF42A5F5.toInt()
+        "Мясо и рыба" -> 0xFFEF5350.toInt()
+        "Хлеб и выпечка" -> 0xFFFFA726.toInt()
+        "Напитки" -> 0xFF29B6F6.toInt()
+        "Бакалея" -> 0xFFAB47BC.toInt()
+        "Заморозка" -> 0xFF26C6DA.toInt()
+        "Сладости" -> 0xFFEC407A.toInt()
+        "Бытовая химия" -> 0xFF9CCC65.toInt()
+        else -> 0xFF9E9E9E.toInt()
     }
 
     private fun strike(tv: TextView, done: Boolean) {
