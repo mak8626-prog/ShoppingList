@@ -18,7 +18,6 @@
             android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="8dp" />
 
-        <!-- Выбор цвета приложения -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -29,65 +28,68 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
 
+        <!-- Контейнер с запасом по высоте -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
 
             <View
                 android:id="@+id/colorGreen"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_green" />
 
             <View
                 android:id="@+id/colorIndigo"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_indigo" />
 
             <View
                 android:id="@+id/colorTeal"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_teal" />
 
             <View
                 android:id="@+id/colorPurple"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_purple" />
 
             <View
                 android:id="@+id/colorTerracotta"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_terracotta" />
 
             <View
                 android:id="@+id/colorBlueGrey"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_bluegrey" />
 
             <View
                 android:id="@+id/colorBrown"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/color_circle_brown" />
 
             <View
                 android:id="@+id/colorWine"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="@drawable/color_circle_wine" />
         </LinearLayout>
 
@@ -95,7 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="?attr/colorSurfaceVariant"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
