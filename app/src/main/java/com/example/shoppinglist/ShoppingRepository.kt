@@ -26,7 +26,6 @@ class ShoppingRepository(context: Context) {
                 )
             }
         } catch (e: Exception) {
-            // Данные повреждены — начинаем с чистого листа
         }
         return list
     }
@@ -45,7 +44,6 @@ class ShoppingRepository(context: Context) {
             }
             prefs.edit().putString(KEY_ITEMS, arr.toString()).apply()
         } catch (e: Exception) {
-            // Игнорируем — если что-то не так, просто не сохранилось
         }
     }
 
@@ -152,6 +150,13 @@ class ShoppingRepository(context: Context) {
         prefs.edit().putBoolean(key, value).apply()
     }
 
+    fun getString(key: String, def: String): String =
+        prefs.getString(key, def) ?: def
+
+    fun setString(key: String, value: String) {
+        prefs.edit().putString(key, value).apply()
+    }
+
     companion object {
         const val KEY_ITEMS = "items"
         const val KEY_HISTORY = "history"
@@ -166,5 +171,16 @@ class ShoppingRepository(context: Context) {
         const val SET_SHOW_TOTAL = "show_total"
         const val SET_CLEAR_FIELDS = "clear_fields"
         const val SET_SHOW_TAGS = "show_tags"
+        const val SET_THEME_COLOR = "theme_color"
+
+        // Значения цветов
+        const val COLOR_GREEN = "green"
+        const val COLOR_INDIGO = "indigo"
+        const val COLOR_TEAL = "teal"
+        const val COLOR_PURPLE = "purple"
+        const val COLOR_TERRACOTTA = "terracotta"
+        const val COLOR_BLUEGREY = "bluegrey"
+        const val COLOR_BROWN = "brown"
+        const val COLOR_WINE = "wine"
     }
 }
