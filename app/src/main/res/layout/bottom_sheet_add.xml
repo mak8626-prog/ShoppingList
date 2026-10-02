@@ -38,18 +38,7 @@
             app:singleLine="true" />
     </HorizontalScrollView>
 
-    <AutoCompleteTextView
-        android:id="@+id/bsEditItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:hint="Что купить?"
-        android:completionThreshold="1"
-        android:inputType="textCapSentences"
-        android:imeOptions="actionDone"
-        android:textSize="16sp"
-        android:maxLines="1" />
-
+    <!-- Всё в одну строку: название, − 1 +, + Цена -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,27 +46,90 @@
         android:layout_marginTop="12dp"
         android:gravity="center_vertical">
 
+        <AutoCompleteTextView
+            android:id="@+id/bsEditItem"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Что купить?"
+            android:completionThreshold="1"
+            android:inputType="textCapSentences"
+            android:imeOptions="actionDone"
+            android:textSize="15sp"
+            android:maxLines="1" />
+
+        <ImageButton
+            android:id="@+id/bsBtnMinus"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Минус"
+            android:src="@drawable/ic_minus"
+            android:scaleType="centerInside" />
+
+        <EditText
+            android:id="@+id/bsEditQuantity"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:inputType="number"
+            android:text="1"
+            android:textSize="15sp"
+            android:maxLines="1"
+            android:background="@android:color/transparent" />
+
+        <ImageButton
+            android:id="@+id/bsBtnPlus"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Плюс"
+            android:src="@drawable/ic_plus"
+            android:scaleType="centerInside" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bsBtnTogglePrice"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:minWidth="0dp"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:text="+ ₽"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Поле цены — появляется при нажатии на "+ ₽" -->
+    <LinearLayout
+        android:id="@+id/priceRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
         <EditText
             android:id="@+id/bsEditPrice"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Цена"
+            android:hint="Цена за единицу"
             android:inputType="numberDecimal"
             android:textSize="16sp"
             android:maxLines="1" />
 
-        <EditText
-            android:id="@+id/bsEditQuantity"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:hint="Количество"
-            android:inputType="number"
-            android:text="1"
-            android:textSize="16sp"
-            android:maxLines="1" />
+        <ImageButton
+            android:id="@+id/bsBtnClosePrice"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Скрыть цену"
+            android:src="@drawable/ic_close"
+            android:scaleType="centerInside" />
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
