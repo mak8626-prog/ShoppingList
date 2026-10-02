@@ -38,7 +38,6 @@
             app:singleLine="true" />
     </HorizontalScrollView>
 
-    <!-- Всё в одну строку: название, − 1 +, + Цена -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -95,13 +94,14 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="2dp"
             android:minWidth="0dp"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:text="+ ₽"
-            android:textSize="13sp" />
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="?attr/colorPrimary" />
     </LinearLayout>
 
-    <!-- Поле цены — появляется при нажатии на "+ ₽" -->
     <LinearLayout
         android:id="@+id/priceRow"
         android:layout_width="match_parent"
