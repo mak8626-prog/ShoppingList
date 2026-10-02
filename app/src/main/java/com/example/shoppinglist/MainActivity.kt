@@ -35,13 +35,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         repo = ShoppingRepository(this)
 
+        // Применяем тёмную тему ДО setTheme
         if (repo.getBool(ShoppingRepository.SET_DARK_THEME, false)) {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         } else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
+
+        // Применяем цветовую тему ДО setContentView
+        applyColorTheme()
 
         setContentView(R.layout.activity_main)
         allItems.addAll(repo.load())
@@ -140,6 +145,21 @@ class MainActivity : AppCompatActivity() {
         applyFilter()
     }
 
+    private fun applyColorTheme() {
+        val color = repo.getString(ShoppingRepository.SET_THEME_COLOR, ShoppingRepository.COLOR_GREEN)
+        val themeRes = when (color) {
+            ShoppingRepository.COLOR_INDIGO -> R.style.Theme_ShoppingList_Indigo
+            ShoppingRepository.COLOR_TEAL -> R.style.Theme_ShoppingList_Teal
+            ShoppingRepository.COLOR_PURPLE -> R.style.Theme_ShoppingList_Purple
+            ShoppingRepository.COLOR_TERRACOTTA -> R.style.Theme_ShoppingList_Terracotta
+            ShoppingRepository.COLOR_BLUEGREY -> R.style.Theme_ShoppingList_BlueGrey
+            ShoppingRepository.COLOR_BROWN -> R.style.Theme_ShoppingList_Brown
+            ShoppingRepository.COLOR_WINE -> R.style.Theme_ShoppingList_Wine
+            else -> R.style.Theme_ShoppingList
+        }
+        setTheme(themeRes)
+    }
+
     internal fun showScreen(index: Int) {
         val screens = listOf(screenList, screenRecipes, screenSettings)
         for (i in screens.indices) {
@@ -201,7 +221,6 @@ class MainActivity : AppCompatActivity() {
         emptyState.visibility = if (nowVisible) View.VISIBLE else View.GONE
         recycler.visibility = if (nowVisible) View.GONE else View.VISIBLE
 
-        // Запускаем анимацию корзины, когда пустой экран только что появился
         if (nowVisible && !wasVisible) {
             emptyState.postDelayed({ animateCart() }, 150)
         }
