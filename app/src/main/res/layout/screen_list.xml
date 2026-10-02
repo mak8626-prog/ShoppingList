@@ -39,8 +39,10 @@
             android:visibility="gone">
 
             <TextView
+                android:id="@+id/emptyCartIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:tag="empty_cart_icon"
                 android:text="🛒"
                 android:textSize="72sp" />
 
@@ -57,7 +59,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Нажми «+» чтобы добавить товар"
+                android:text="Нажми + чтобы добавить первый товар"
                 android:textSize="14sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center" />
