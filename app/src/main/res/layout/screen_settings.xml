@@ -18,6 +18,86 @@
             android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="8dp" />
 
+        <!-- Выбор цвета приложения -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Цвет приложения"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <View
+                android:id="@+id/colorGreen"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_green" />
+
+            <View
+                android:id="@+id/colorIndigo"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_indigo" />
+
+            <View
+                android:id="@+id/colorTeal"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_teal" />
+
+            <View
+                android:id="@+id/colorPurple"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_purple" />
+
+            <View
+                android:id="@+id/colorTerracotta"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_terracotta" />
+
+            <View
+                android:id="@+id/colorBlueGrey"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_bluegrey" />
+
+            <View
+                android:id="@+id/colorBrown"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_circle_brown" />
+
+            <View
+                android:id="@+id/colorWine"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/color_circle_wine" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorSurfaceVariant"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/swDarkTheme"
             android:layout_width="match_parent"
