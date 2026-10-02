@@ -47,6 +47,8 @@ class ShoppingAdapter(
             "×${item.quantity}"
 
         holder.details.text = "${item.category} • $priceStr"
+
+        // Только полоска слева — фон карточки остаётся нейтральным
         holder.stripe.setBackgroundColor(CategoryColors.color(item.category))
 
         val anim = AnimationUtils.loadAnimation(holder.itemView.context, android.R.anim.fade_in)
@@ -72,7 +74,6 @@ class ShoppingAdapter(
             if (pos != RecyclerView.NO_POSITION) onDelete(pos)
         }
 
-        // Лёгкая анимация "пружинки" при нажатии
         holder.itemView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
