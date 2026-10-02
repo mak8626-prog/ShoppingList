@@ -8,11 +8,13 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Filter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import java.util.ArrayList
 
 internal fun MainActivity.showAddSheet() {
     val sheet = BottomSheetDialog(this)
@@ -29,11 +31,41 @@ internal fun MainActivity.showAddSheet() {
     setupChipsInto(bsChips)
 
     val all = (repo.loadHistory().toList() + PopularProducts.names).distinct()
+
     bsEditItem.threshold = 1
-    bsEditItem.dropDownHeight = (200 * resources.displayMetrics.density).toInt()
-    bsEditItem.setAdapter(
-        ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, all)
-    )
+    bsEditItem.setAdapter(object : ArrayAdapter<String>(
+        this,
+        android.R.layout.simple_dropdown_item_1line,
+        ArrayList<String>()
+    ) {
+        override fun getFilter(): Filter {
+            return object : Filter() {
+                override fun performFiltering(constraint: CharSequence?): FilterResults {
+                    val prefix = constraint?.toString()?.lowercase()?.trim() ?: ""
+                    val results = FilterResults()
+                    if (prefix.isEmpty()) {
+                        results.values = emptyList<String>()
+                        results.count = 0
+                        return results
+                    }
+                    val filtered = all.filter {
+                        it.lowercase().startsWith(prefix)
+                    }.take(6)
+                    results.values = filtered
+                    results.count = filtered.size
+                    return results
+                }
+
+                @Suppress("UNCHECKED_CAST")
+                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                    clear()
+                    val values = results?.values as? List<String> ?: emptyList()
+                    addAll(values)
+                    notifyDataSetChanged()
+                }
+            }
+        }
+    })
 
     bsBtnTogglePrice.setOnClickListener { v ->
         v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
