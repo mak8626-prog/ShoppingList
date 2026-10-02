@@ -32,13 +32,13 @@
                 android:textColor="?attr/colorPrimary" />
 
             <ImageButton
-                android:id="@+id/btnClearDone"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Убрать купленное"
-                android:src="@drawable/ic_delete"
-                android:scaleType="centerInside" />
+    android:id="@+id/btnClearDone"
+    android:layout_width="40dp"
+    android:layout_height="40dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:contentDescription="Убрать купленное"
+    android:src="@drawable/ic_clear_done"
+    android:scaleType="centerInside" />
         </LinearLayout>
 
         <FrameLayout
