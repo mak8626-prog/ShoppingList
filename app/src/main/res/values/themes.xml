@@ -1,9 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.ShoppingList" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary</item>
+
+    <style name="Base.Theme.ShoppingList" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorOnPrimary">@color/on_primary</item>
-        <item name="colorPrimaryContainer">@color/primary_container</item>
-        <item name="colorOnPrimaryContainer">@color/on_primary_container</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="android:colorBackground">@color/surface</item>
@@ -16,6 +14,56 @@
         <item name="chipStyle">@style/SmallChip</item>
     </style>
 
+    <!-- Зелёная (по умолчанию) -->
+    <style name="Theme.ShoppingList" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryContainer">@color/primary_green_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_green_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Indigo" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_indigo</item>
+        <item name="colorPrimaryContainer">@color/primary_indigo_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_indigo_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Teal" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_teal</item>
+        <item name="colorPrimaryContainer">@color/primary_teal_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_teal_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Purple" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_purple</item>
+        <item name="colorPrimaryContainer">@color/primary_purple_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_purple_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Terracotta" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_terracotta</item>
+        <item name="colorPrimaryContainer">@color/primary_terracotta_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_terracotta_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.BlueGrey" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_bluegrey</item>
+        <item name="colorPrimaryContainer">@color/primary_bluegrey_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_bluegrey_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Brown" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_brown</item>
+        <item name="colorPrimaryContainer">@color/primary_brown_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_brown_container</item>
+    </style>
+
+    <style name="Theme.ShoppingList.Wine" parent="Base.Theme.ShoppingList">
+        <item name="colorPrimary">@color/primary_wine</item>
+        <item name="colorPrimaryContainer">@color/primary_wine_container</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_wine_container</item>
+    </style>
+
+    <!-- Компактный чип -->
     <style name="SmallChip" parent="Widget.Material3.Chip.Filter">
         <item name="chipMinTouchTargetSize">0dp</item>
         <item name="chipMinHeight">24dp</item>
@@ -24,7 +72,7 @@
         <item name="android:textSize">11sp</item>
     </style>
 
-    <!-- Идеально круглая FAB -->
+    <!-- Круглый FAB -->
     <style name="CircleFab" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
