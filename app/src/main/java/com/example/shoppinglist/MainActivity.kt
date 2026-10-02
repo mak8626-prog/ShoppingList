@@ -195,8 +195,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         adapter.notifyDataSetChanged()
-        emptyState.visibility = if (displayedItems.isEmpty()) View.VISIBLE else View.GONE
-        recycler.visibility = if (displayedItems.isEmpty()) View.GONE else View.VISIBLE
+
+        val wasVisible = emptyState.visibility == View.VISIBLE
+        val nowVisible = displayedItems.isEmpty()
+        emptyState.visibility = if (nowVisible) View.VISIBLE else View.GONE
+        recycler.visibility = if (nowVisible) View.GONE else View.VISIBLE
+
+        // Запускаем анимацию корзины, когда пустой экран только что появился
+        if (nowVisible && !wasVisible) {
+            emptyState.postDelayed({ animateCart() }, 150)
+        }
+
         updateTotal()
     }
 
