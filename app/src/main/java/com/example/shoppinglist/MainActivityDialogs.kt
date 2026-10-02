@@ -9,6 +9,8 @@ import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Filter
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -23,8 +25,13 @@ internal fun MainActivity.showAddSheet() {
 
     val bsChips = view.findViewById<com.google.android.material.chip.ChipGroup>(R.id.bsChipGroup)
     val bsEditItem = view.findViewById<AutoCompleteTextView>(R.id.bsEditItem)
-    val bsEditPrice = view.findViewById<EditText>(R.id.bsEditPrice)
     val bsEditQty = view.findViewById<EditText>(R.id.bsEditQuantity)
+    val bsBtnMinus = view.findViewById<ImageButton>(R.id.bsBtnMinus)
+    val bsBtnPlus = view.findViewById<ImageButton>(R.id.bsBtnPlus)
+    val bsEditPrice = view.findViewById<EditText>(R.id.bsEditPrice)
+    val priceRow = view.findViewById<LinearLayout>(R.id.priceRow)
+    val bsBtnTogglePrice = view.findViewById<Button>(R.id.bsBtnTogglePrice)
+    val bsBtnClosePrice = view.findViewById<ImageButton>(R.id.bsBtnClosePrice)
     val bsBtnAdd = view.findViewById<Button>(R.id.bsBtnAdd)
 
     setupChipsInto(bsChips)
@@ -66,6 +73,43 @@ internal fun MainActivity.showAddSheet() {
         }
     })
 
+    // Кнопка "−" — уменьшает количество
+    bsBtnMinus.setOnClickListener { v ->
+        v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        val current = bsEditQty.text.toString().toIntOrNull() ?: 1
+        val newVal = (current - 1).coerceAtLeast(1)
+        bsEditQty.setText(newVal.toString())
+        bsEditQty.setSelection(bsEditQty.text.length)
+    }
+
+    // Кнопка "+" — увеличивает количество
+    bsBtnPlus.setOnClickListener { v ->
+        v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        val current = bsEditQty.text.toString().toIntOrNull() ?: 1
+        bsEditQty.setText((current + 1).toString())
+        bsEditQty.setSelection(bsEditQty.text.length)
+    }
+
+    // Кнопка "+ ₽" — раскрывает поле цены
+    bsBtnTogglePrice.setOnClickListener { v ->
+        v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        priceRow.visibility = View.VISIBLE
+        priceRow.alpha = 0f
+        priceRow.animate().alpha(1f).setDuration(180).start()
+        bsEditPrice.requestFocus()
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showSoftInput(bsEditPrice, InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    // Кнопка "✕" — прячет поле цены
+    bsBtnClosePrice.setOnClickListener { v ->
+        v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+        priceRow.visibility = View.GONE
+        bsEditPrice.text.clear()
+        bsEditItem.requestFocus()
+    }
+
+    // Автозаполнение цены и категории при выборе товара
     bsEditItem.setOnItemClickListener { _, _, _, _ ->
         val name = bsEditItem.text.toString().trim()
         if (bsEditPrice.text.isNullOrEmpty()) {
@@ -74,12 +118,16 @@ internal fun MainActivity.showAddSheet() {
                 val txt = if (last % 1.0 == 0.0) last.toInt().toString()
                           else String.format("%.2f", last).trimEnd('0').trimEnd('.')
                 bsEditPrice.setText(txt)
+                if (priceRow.visibility == View.GONE) {
+                    priceRow.visibility = View.VISIBLE
+                }
             }
         }
         val autoCat = repo.getCategoryForProduct(name) ?: PopularProducts.getCategory(name)
         if (autoCat != null) selectChipIn(bsChips, autoCat)
     }
 
+    // Кнопка "Добавить"
     bsBtnAdd.setOnClickListener { v ->
         if (!bsBtnAdd.isEnabled) return@setOnClickListener
         v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
