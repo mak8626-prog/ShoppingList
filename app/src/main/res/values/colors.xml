@@ -1,10 +1,57 @@
 <resources>
     <color name="ic_launcher_background">#4CAF50</color>
 
-    <color name="primary">#4CAF50</color>
+    <!-- === Палитры приложения === -->
+    <!-- Зелёная (по умолчанию) -->
+    <color name="primary_green">#4CAF50</color>
+    <color name="primary_green_dark">#388E3C</color>
+    <color name="primary_green_container">#C8E6C9</color>
+    <color name="on_primary_green_container">#1B5E20</color>
+
+    <!-- Индиго -->
+    <color name="primary_indigo">#5C6BC0</color>
+    <color name="primary_indigo_dark">#3949AB</color>
+    <color name="primary_indigo_container">#C5CAE9</color>
+    <color name="on_primary_indigo_container">#1A237E</color>
+
+    <!-- Бирюзовая -->
+    <color name="primary_teal">#26A69A</color>
+    <color name="primary_teal_dark">#00897B</color>
+    <color name="primary_teal_container">#B2DFDB</color>
+    <color name="on_primary_teal_container">#004D40</color>
+
+    <!-- Фиолетовая -->
+    <color name="primary_purple">#7E57C2</color>
+    <color name="primary_purple_dark">#5E35B1</color>
+    <color name="primary_purple_container">#D1C4E9</color>
+    <color name="on_primary_purple_container">#311B92</color>
+
+    <!-- Терракотовая -->
+    <color name="primary_terracotta">#B0736A</color>
+    <color name="primary_terracotta_dark">#8D5B54</color>
+    <color name="primary_terracotta_container">#E4C7C3</color>
+    <color name="on_primary_terracotta_container">#4E2E28</color>
+
+    <!-- Сине-серая -->
+    <color name="primary_bluegrey">#546E7A</color>
+    <color name="primary_bluegrey_dark">#37474F</color>
+    <color name="primary_bluegrey_container">#CFD8DC</color>
+    <color name="on_primary_bluegrey_container">#1C313A</color>
+
+    <!-- Коричневая -->
+    <color name="primary_brown">#8D6E63</color>
+    <color name="primary_brown_dark">#5D4037</color>
+    <color name="primary_brown_container">#D7CCC8</color>
+    <color name="on_primary_brown_container">#3E2723</color>
+
+    <!-- Бордовая -->
+    <color name="primary_wine">#A04747</color>
+    <color name="primary_wine_dark">#7A3333</color>
+    <color name="primary_wine_container">#E4C2C2</color>
+    <color name="on_primary_wine_container">#4D1E1E</color>
+
+    <!-- Общие -->
     <color name="on_primary">#FFFFFF</color>
-    <color name="primary_container">#C8E6C9</color>
-    <color name="on_primary_container">#1B5E20</color>
     <color name="secondary">#FFA726</color>
     <color name="on_secondary">#FFFFFF</color>
     <color name="surface">#FAFAFA</color>
@@ -12,6 +59,5 @@
     <color name="surface_variant">#F0F0F0</color>
     <color name="on_surface_variant">#49454F</color>
     <color name="card_bg">#FFFFFF</color>
-    <color name="card_done_bg">#E8F5E9</color>
     <color name="outline">#E0E0E0</color>
 </resources>
