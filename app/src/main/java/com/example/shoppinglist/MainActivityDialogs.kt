@@ -25,7 +25,6 @@ internal fun MainActivity.showAddSheet() {
     val bsEditItem = view.findViewById<AutoCompleteTextView>(R.id.bsEditItem)
     val bsEditPrice = view.findViewById<EditText>(R.id.bsEditPrice)
     val bsEditQty = view.findViewById<EditText>(R.id.bsEditQuantity)
-    val bsBtnTogglePrice = view.findViewById<Button>(R.id.bsBtnTogglePrice)
     val bsBtnAdd = view.findViewById<Button>(R.id.bsBtnAdd)
 
     setupChipsInto(bsChips)
@@ -67,21 +66,6 @@ internal fun MainActivity.showAddSheet() {
         }
     })
 
-    bsBtnTogglePrice.setOnClickListener { v ->
-        v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
-        if (bsEditPrice.visibility == View.GONE) {
-            bsEditPrice.visibility = View.VISIBLE
-            bsEditPrice.alpha = 0f
-            bsEditPrice.animate().alpha(1f).setDuration(180).start()
-            bsEditPrice.requestFocus()
-            bsBtnTogglePrice.text = "- Цена"
-        } else {
-            bsEditPrice.visibility = View.GONE
-            bsEditPrice.text.clear()
-            bsBtnTogglePrice.text = "+ Цена"
-        }
-    }
-
     bsEditItem.setOnItemClickListener { _, _, _, _ ->
         val name = bsEditItem.text.toString().trim()
         if (bsEditPrice.text.isNullOrEmpty()) {
@@ -90,10 +74,6 @@ internal fun MainActivity.showAddSheet() {
                 val txt = if (last % 1.0 == 0.0) last.toInt().toString()
                           else String.format("%.2f", last).trimEnd('0').trimEnd('.')
                 bsEditPrice.setText(txt)
-                if (bsEditPrice.visibility == View.GONE) {
-                    bsEditPrice.visibility = View.VISIBLE
-                    bsBtnTogglePrice.text = "- Цена"
-                }
             }
         }
         val autoCat = repo.getCategoryForProduct(name) ?: PopularProducts.getCategory(name)
