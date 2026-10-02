@@ -89,17 +89,16 @@ internal fun MainActivity.setupSettingsScreen() {
         colorWine to ShoppingRepository.COLOR_WINE
     )
 
-    // Показываем какой выбран — обводим крупнее
     val currentColor = repo.getString(ShoppingRepository.SET_THEME_COLOR, ShoppingRepository.COLOR_GREEN)
     allColors.forEach { (view, colorKey) ->
         if (colorKey == currentColor) {
-            view.scaleX = 1.15f
-            view.scaleY = 1.15f
+            view.scaleX = 1.1f
+            view.scaleY = 1.1f
             view.alpha = 1f
         } else {
             view.scaleX = 1f
             view.scaleY = 1f
-            view.alpha = 0.6f
+            view.alpha = 0.55f
         }
     }
 
