@@ -3,7 +3,9 @@ package com.example.shoppinglist
 import android.content.res.ColorStateList
 import android.view.HapticFeedbackConstants
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.EditText
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.chip.Chip
@@ -127,4 +129,13 @@ internal fun MainActivity.selectedChipIn(group: ChipGroup): String {
     if (id == View.NO_ID) return "Разное"
     val chip = group.findViewById<Chip>(id)
     return chip?.text?.toString() ?: "Разное"
+}
+
+internal fun MainActivity.animateCart() {
+    try {
+        val cart = emptyState.findViewWithTag<View>("empty_cart_icon") ?: return
+        val anim = AnimationUtils.loadAnimation(this, R.anim.cart_wiggle)
+        cart.startAnimation(anim)
+    } catch (e: Exception) {
+    }
 }
