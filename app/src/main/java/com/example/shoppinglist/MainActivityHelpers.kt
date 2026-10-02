@@ -67,6 +67,49 @@ internal fun MainActivity.setupSettingsScreen() {
         v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
         repo.setBool(ShoppingRepository.SET_CLEAR_FIELDS, x)
     }
+
+    // Обработка выбора цвета
+    val colorGreen = findViewById<View>(R.id.colorGreen)
+    val colorIndigo = findViewById<View>(R.id.colorIndigo)
+    val colorTeal = findViewById<View>(R.id.colorTeal)
+    val colorPurple = findViewById<View>(R.id.colorPurple)
+    val colorTerracotta = findViewById<View>(R.id.colorTerracotta)
+    val colorBlueGrey = findViewById<View>(R.id.colorBlueGrey)
+    val colorBrown = findViewById<View>(R.id.colorBrown)
+    val colorWine = findViewById<View>(R.id.colorWine)
+
+    val allColors = mapOf(
+        colorGreen to ShoppingRepository.COLOR_GREEN,
+        colorIndigo to ShoppingRepository.COLOR_INDIGO,
+        colorTeal to ShoppingRepository.COLOR_TEAL,
+        colorPurple to ShoppingRepository.COLOR_PURPLE,
+        colorTerracotta to ShoppingRepository.COLOR_TERRACOTTA,
+        colorBlueGrey to ShoppingRepository.COLOR_BLUEGREY,
+        colorBrown to ShoppingRepository.COLOR_BROWN,
+        colorWine to ShoppingRepository.COLOR_WINE
+    )
+
+    // Показываем какой выбран — обводим крупнее
+    val currentColor = repo.getString(ShoppingRepository.SET_THEME_COLOR, ShoppingRepository.COLOR_GREEN)
+    allColors.forEach { (view, colorKey) ->
+        if (colorKey == currentColor) {
+            view.scaleX = 1.15f
+            view.scaleY = 1.15f
+            view.alpha = 1f
+        } else {
+            view.scaleX = 1f
+            view.scaleY = 1f
+            view.alpha = 0.6f
+        }
+    }
+
+    allColors.forEach { (view, colorKey) ->
+        view.setOnClickListener { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+            repo.setString(ShoppingRepository.SET_THEME_COLOR, colorKey)
+            recreate()
+        }
+    }
 }
 
 internal fun MainActivity.setupChipsInto(group: ChipGroup) {
