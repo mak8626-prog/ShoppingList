@@ -1,11 +1,11 @@
 package com.example.shoppinglist
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.content.res.ColorStateList
 import android.view.HapticFeedbackConstants
 import android.view.View
-import android.view.animation.AnimationUtils
 import android.widget.EditText
-import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.chip.Chip
@@ -134,8 +134,13 @@ internal fun MainActivity.selectedChipIn(group: ChipGroup): String {
 internal fun MainActivity.animateCart() {
     try {
         val cart = emptyState.findViewWithTag<View>("empty_cart_icon") ?: return
-        val anim = AnimationUtils.loadAnimation(this, R.anim.cart_wiggle)
-        cart.startAnimation(anim)
+        cart.animate().cancel()
+        cart.rotation = 0f
+        val anim = ObjectAnimator.ofFloat(cart, "rotation", -8f, 8f)
+        anim.duration = 180
+        anim.repeatCount = 5
+        anim.repeatMode = ValueAnimator.REVERSE
+        anim.start()
     } catch (e: Exception) {
     }
 }
